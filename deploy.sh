@@ -42,6 +42,7 @@ wget -qO- https://wordpress.org/latest.tar.gz | tar -xz -C "$DIR" --strip-compon
 
 apt-get install nginx -y >/dev/null
 apt-get install mariadb-server -y
+# https://make.wordpress.org/hosting/handbook/server-environment/#required-extensions
 apt-get install php-fpm php php-mysqli -y
 
 
