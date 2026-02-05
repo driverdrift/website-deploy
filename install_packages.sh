@@ -10,7 +10,7 @@ install_packages() {
 	# https://make.wordpress.org/hosting/handbook/server-environment/#required-extensions
 
 	# sudo apt install php-fpm php php-mysql php-curl php-gd php-mbstring php-xml php-xmlrpc php-soap php-intl \
-php-zip php-bz2 php-cli php-cgi php-imagick -y
+# php-zip php-bz2 php-cli php-cgi php-imagick -y
 	
 	echo "nginx, mariadb-server, php-fpm installed successfully."
 
