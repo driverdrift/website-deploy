@@ -5,15 +5,15 @@ set_domain_storage_path() {
 		
 		if [[ -z "$DOMAIN" ]]; then
 			DIR="/var/www/default"
-			echo "Use default website directory: $DIR"
+			echo "Use default website directory: $DIR" >&2
 			break
 		else
 			if _is_valid_domain "$DOMAIN"; then
 				DIR="/var/www/$DOMAIN"
-				echo "Use custom domain directory: $DIR"
+				echo "Use custom domain directory: $DIR" >&2
 				break
 			else
-				echo "Please input a valid domain name..."
+				echo "Please input a valid domain name..." >&2
 				continue
 			fi
 		fi
@@ -36,16 +36,16 @@ _is_valid_domain() {
 	
 	# check domain length
 	if (( ${#domain} > 255 )); then
-		echo "your domain length is too long"
+		echo "your domain length is too long" >&2
 		return 1
 	fi
 
 	# check domain label
 	if echo "$domain" | grep -Pq '^([a-z0-9-]{0,63}\.)*[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.(?=[a-z0-9-]*[a-z])[a-z0-9][a-z0-9-]{0,62}$'; then
-		echo "Validated Successfully"
+		echo "Validated Successfully" >&2
 		return 0
 	else
-		echo "Invalid domain name"
+		echo "Invalid domain name" >&2
 		return 1
 	fi
 }
