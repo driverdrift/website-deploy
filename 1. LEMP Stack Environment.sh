@@ -1,22 +1,3 @@
-sudo apt update && sudo apt upgrade -y
-
-sudo apt install nginx -y
-# Auto-starts and enables on boot by default
-# sudo systemctl enable nginx
-# sudo systemctl start nginx
-
-sudo apt install mariadb-server -y
-
-# Install php-fpm first to avoid Apache being installed with PHP.
-sudo apt install php-fpm php php-mysql php-curl php-gd php-mbstring php-xml php-xmlrpc php-soap php-intl \
-php-zip php-bz2 php-cli php-cgi php-imagick -y
-
-# Download and extract the latest WordPress into /var/www/, then remove the archive
-cd /var/www/
-sudo wget https://wordpress.org/latest.tar.gz
-sudo tar -xvzf latest.tar.gz
-sudo rm -f latest.tar.gz
-
 # Check and display the status of common web services
 for service in apache2 nginx php8.2-fpm mariadb; do
   echo "===== $service status ====="
@@ -80,3 +61,4 @@ sudo apt autoremove -y
 sudo rm -rf /etc/apache2
 # Check that Apache is fully removed and Nginx is running
 sudo systemctl status nginx
+
