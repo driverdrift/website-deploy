@@ -2,10 +2,19 @@ install_packages() {
 	source ./ensure_bin.sh
 
 	ensure_bin nginx mariadb-server php-fpm
+	# nginx, mariadb-server, php-fpm auto-start and enable on boot by default
+	# sudo systemctl enable service
+	# sudo systemctl start service
+	
 	# php php-mysqli
 	# https://make.wordpress.org/hosting/handbook/server-environment/#required-extensions
-	echo "nginx, mariadb-server, php-fpm installed successfully."
+
+	# sudo apt install php-fpm php php-mysql php-curl php-gd php-mbstring php-xml php-xmlrpc php-soap php-intl \
+php-zip php-bz2 php-cli php-cgi php-imagick -y
 	
+	echo "nginx, mariadb-server, php-fpm installed successfully."
+
+	# Download and extract the latest WordPress into /var/www/$DOMAIN
 	if ! wget -qO- https://wordpress.org/latest.tar.gz | tar -xz -C "$1" --strip-components=1; then
 		echo "Error: Failed to download or extract WordPress." >&2
 		exit 1
