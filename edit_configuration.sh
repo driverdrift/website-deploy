@@ -2,52 +2,7 @@ edit_configuration() {
 	_mariadb_initial
 	_edit_mariadb_configuration
 	_edit_php_configuration
-}
-
-_edit_mariadb_configuration() {
-	set +H  # disable history expansion
-	
-	# DOMAIN="www.google.com"
-	DOMAIN_DB=${DOMAIN//./_}
-	
-	# database name should be no longer than 64
-	DOMAIN_TRUNC_29=${DOMAIN_DB:0:29}
-	DOMAIN_SHA12=$(printf "%s" "$DOMAIN" | sha256sum | cut -c1-12)
-	DB_SALT=$(openssl rand -base64 36 | tr -dc 'A-Za-z0-9!@#%^_' | head -c 18)
-	DB_NAME="wp-${DOMAIN_TRUNC_29}-${DOMAIN_SHA12}-${DB_SALT}"
-	
-	# user name should be no longer than 128
-	DOMAIN_TRUNC_70=${DOMAIN_DB:0:70}
-	DOMAIN_SHA32=$(printf "%s" "$DOMAIN" | sha256sum | cut -c1-32)
-	USER_SALT=$(openssl rand -base64 40 | tr -dc 'A-Za-z0-9_' | head -c 20)
-	DB_USER="wpu-${DOMAIN_TRUNC_70}-${DOMAIN_SHA32}-${USER_SALT}"
-	
-	DB_PASS=$(openssl rand -base64 24)
-	DB_PASS=$(printf "%q" "$DB_PASS")
-	
-	DB_PREFIX="wp-${DOMAIN_TRUNC_29}-${DOMAIN_SHA12}-"
-	for db in $(mariadb -sN -e "SHOW DATABASES LIKE '${DB_PREFIX}%';"); do
-		echo "Dropping database $db"
-		mariadb -e "DROP DATABASE IF EXISTS \`$db\`;"
-	done
-	
-	USER_PREFIX="wpu-${DOMAIN_TRUNC_70}-${DOMAIN_SHA32}-"
-	for user in $(mariadb -sN -e "SELECT User FROM mysql.user WHERE User LIKE '${USER_PREFIX}%';"); do
-	    echo "Dropping user $user"
-	    mariadb -e "DROP USER '$user'@'localhost';"
-	done
-	
-	# echo "DB_NAME=${DB_NAME}" >> /root/wp-db-map.txt  # for debug
-	# chmod 600 /root/wp-db-map.txt  # for debug
-	
-	mariadb -e "
-		CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-		CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';
-		GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'localhost';
-		ALTER USER '${DB_USER}'@'localhost' PASSWORD EXPIRE NEVER;
-		FLUSH PRIVILEGES;
-		# SELECT User, Host, Db, Select_priv, Insert_priv FROM mysql.db;  # debug
-		"
+	_edit_wordpress_configuration "$2"  # DB_NAME / USER / PASS
 }
 
 _mariadb_initial() {
@@ -96,6 +51,52 @@ _mariadb_initial() {
 	# 	"
 }
 
+_edit_mariadb_configuration() {
+	set +H  # disable history expansion
+	
+	# DOMAIN="www.google.com"
+	DOMAIN_DB=${DOMAIN//./_}
+	
+	# database name should be no longer than 64
+	DOMAIN_TRUNC_29=${DOMAIN_DB:0:29}
+	DOMAIN_SHA12=$(printf "%s" "$DOMAIN" | sha256sum | cut -c1-12)
+	DB_SALT=$(openssl rand -base64 36 | tr -dc 'A-Za-z0-9!@#%^_' | head -c 18)
+	DB_NAME="wp-${DOMAIN_TRUNC_29}-${DOMAIN_SHA12}-${DB_SALT}"
+	
+	# user name should be no longer than 128
+	DOMAIN_TRUNC_70=${DOMAIN_DB:0:70}
+	DOMAIN_SHA32=$(printf "%s" "$DOMAIN" | sha256sum | cut -c1-32)
+	USER_SALT=$(openssl rand -base64 40 | tr -dc 'A-Za-z0-9_' | head -c 20)
+	DB_USER="wpu-${DOMAIN_TRUNC_70}-${DOMAIN_SHA32}-${USER_SALT}"
+	
+	DB_PASS=$(openssl rand -base64 24)
+	DB_PASS=$(printf "%q" "$DB_PASS")
+	
+	DB_PREFIX="wp-${DOMAIN_TRUNC_29}-${DOMAIN_SHA12}-"
+	for db in $(mariadb -sN -e "SHOW DATABASES LIKE '${DB_PREFIX}%';"); do
+		echo "Dropping database $db"
+		mariadb -e "DROP DATABASE IF EXISTS \`$db\`;"
+	done
+	
+	USER_PREFIX="wpu-${DOMAIN_TRUNC_70}-${DOMAIN_SHA32}-"
+	for user in $(mariadb -sN -e "SELECT User FROM mysql.user WHERE User LIKE '${USER_PREFIX}%';"); do
+	    echo "Dropping user $user"
+	    mariadb -e "DROP USER '$user'@'localhost';"
+	done
+	
+	# echo "DB_NAME=${DB_NAME}" >> /root/wp-db-map.txt  # for debug
+	# chmod 600 /root/wp-db-map.txt  # for debug
+	
+	mariadb -e "
+		CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+		CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';
+		GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'localhost';
+		ALTER USER '${DB_USER}'@'localhost' PASSWORD EXPIRE NEVER;
+		FLUSH PRIVILEGES;
+		# SELECT User, Host, Db, Select_priv, Insert_priv FROM mysql.db;  # debug
+		"
+}
+
 _edit_php_configuration() {
 	PHP_VER=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')
 	PHP_INI="/etc/php/$PHP_VER/fpm/php.ini"
@@ -137,4 +138,92 @@ _edit_php_configuration() {
 		rm "$PHP_INI.tmp" >&2
 		exit 1
 	}
+}
+
+_edit_wordpress_configuration() {
+	local web_dir="$1"  # such as "/var/www/www.example.com"
+	local web_wp_config="${web_dir}/wp-config.php"
+	cp "${web_dir}/wp-config-sample.php" "$web_wp_config"
+	
+	awk -v db_name="$DB_NAME" \
+		-v db_user="$DB_USER" \
+		-v db_pass="$DB_PASS" '
+	BEGIN {
+		n = u = p = h = c = l = 0
+	}
+
+	# DB_NAME
+	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''DB_NAME'\''[[:space:]]*,/ {
+		print "define( '\''DB_NAME'\'', '\''" db_name "'\'' );"
+		n = 1
+		next
+	}
+
+	# DB_USER
+	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''DB_USER'\''[[:space:]]*,/ {
+		print "define( '\''DB_USER'\'', '\''" db_user "'\'' );"
+		u = 1
+		next
+	}
+
+	# DB_PASSWORD
+	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''DB_PASSWORD'\''[[:space:]]*,/ {
+		print "define( '\''DB_PASSWORD'\'', '\''" db_pass "'\'' );"
+		p = 1
+		next
+	}
+
+	# DB_HOST
+	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''DB_HOST'\''[[:space:]]*,/ {
+		print "define( '\''DB_HOST'\'', '\''localhost'\'' );"
+		h = 1
+		next
+	}
+
+	# DB_CHARSET
+	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''DB_CHARSET'\''[[:space:]]*,/ {
+		print "define( '\''DB_CHARSET'\'', '\''utf8mb4'\'' );"
+		c = 1
+		next
+	}
+
+	# DB_COLLATE
+	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''DB_COLLATE'\''[[:space:]]*,/ {
+		print "define( '\''DB_COLLATE'\'', '\''utf8mb4_unicode_ci'\'' );"
+		l = 1
+		next
+	}
+
+	{
+		print
+	}
+
+	END {
+		if (!(n && u && p && h && c && l)) exit 1
+	}
+	' "$web_wp_config" > "$web_wp_config.tmp" && \
+	mv "$web_wp_config.tmp" "$web_wp_config" || {
+		echo "ERROR: $web_wp_config does not match the expected WordPress template; database settings not fully found." >&2
+		rm -f "$web_wp_config.tmp" >&2
+		exit 1
+	}
+}
+
+_generate_wp_salt() {
+	# Available characters:
+	# - Standard symbols commonly used in WordPress salts.
+	# - Explicitly excluded: ' (single quote) and " (double quote) to prevent PHP syntax errors.
+	tr -dc 'A-Za-z0-9!@#$%^&*()-_=+[]{}|;:,.<>?/~`' \
+		< /dev/urandom | head -c 64
+}
+
+_generate_wp_salts() {
+	AUTH_KEY=$(_generate_wp_salt)
+	SECURE_AUTH_KEY=$(_generate_wp_salt)
+	LOGGED_IN_KEY=$(_generate_wp_salt)
+	NONCE_KEY=$(_generate_wp_salt)
+	AUTH_SALT=$(_generate_wp_salt)
+	SECURE_AUTH_SALT=$(_generate_wp_salt)
+	LOGGED_IN_SALT=$(_generate_wp_salt)
+	NONCE_SALT=$(_generate_wp_salt)
 }
