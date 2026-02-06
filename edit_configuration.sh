@@ -232,7 +232,7 @@ _generate_wp_salts() {
 
 _edit_wp_salts() {
 	local web_dir="$1"  # such as "/var/www/www.example.com"
-	local web_web_wp_config="${web_dir}/wp-config.php"
+	local web_wp_config="${web_dir}/wp-config.php"
 
 	awk -v auth_key="$AUTH_KEY" \
 		-v secure_auth_key="$SECURE_AUTH_KEY" \
