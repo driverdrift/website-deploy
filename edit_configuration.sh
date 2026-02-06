@@ -2,7 +2,9 @@ edit_configuration() {
 	_mariadb_initial
 	_edit_mariadb_configuration
 	_edit_php_configuration
-	_edit_wordpress_configuration "$2"  # DB_NAME / USER / PASS
+	_edit_wp_configuration "$2"  # DB_NAME / USER / PASS
+	_generate_wp_salts
+	_edit_wp_salts "$2
 }
 
 _mariadb_initial() {
@@ -140,7 +142,7 @@ _edit_php_configuration() {
 	}
 }
 
-_edit_wordpress_configuration() {
+_edit_wp_configuration() {
 	local web_dir="$1"  # such as "/var/www/www.example.com"
 	local web_wp_config="${web_dir}/wp-config.php"
 	cp "${web_dir}/wp-config-sample.php" "$web_wp_config"
@@ -226,4 +228,83 @@ _generate_wp_salts() {
 	SECURE_AUTH_SALT=$(_generate_wp_salt)
 	LOGGED_IN_SALT=$(_generate_wp_salt)
 	NONCE_SALT=$(_generate_wp_salt)
+}
+
+_edit_wp_salts() {
+	local web_dir="$1"  # such as "/var/www/www.example.com"
+	local web_web_wp_config="${web_dir}/wp-config.php"
+
+	awk -v auth_key="$AUTH_KEY" \
+		-v secure_auth_key="$SECURE_AUTH_KEY" \
+		-v logged_in_key="$LOGGED_IN_KEY" \
+		-v nonce_key="$NONCE_KEY" \
+		-v auth_salt="$AUTH_SALT" \
+		-v secure_auth_salt="$SECURE_AUTH_SALT" \
+		-v logged_in_salt="$LOGGED_IN_SALT" \
+		-v nonce_salt="$NONCE_SALT" '
+	BEGIN {
+		ak = sak = lk = nk = as = sas = ls = ns = 0
+	}
+	
+	# AUTH_KEY
+	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''AUTH_KEY'\''[[:space:]]*,/ {
+		print "define( '\''AUTH_KEY'\'', '\''" auth_key "'\'' );"
+		ak = 1; next
+	}
+	
+	# SECURE_AUTH_KEY
+	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''SECURE_AUTH_KEY'\''[[:space:]]*,/ {
+		print "define( '\''SECURE_AUTH_KEY'\'', '\''" secure_auth_key "'\'' );"
+		sak = 1; next
+	}
+	
+	# LOGGED_IN_KEY
+	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''LOGGED_IN_KEY'\''[[:space:]]*,/ {
+		print "define( '\''LOGGED_IN_KEY'\'', '\''" logged_in_key "'\'' );"
+		lk = 1; next
+	}
+	
+	# NONCE_KEY
+	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''NONCE_KEY'\''[[:space:]]*,/ {
+		print "define( '\''NONCE_KEY'\'', '\''" nonce_key "'\'' );"
+		nk = 1; next
+	}
+	
+	# AUTH_SALT
+	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''AUTH_SALT'\''[[:space:]]*,/ {
+		print "define( '\''AUTH_SALT'\'', '\''" auth_salt "'\'' );"
+		as = 1; next
+	}
+	
+	# SECURE_AUTH_SALT
+	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''SECURE_AUTH_SALT'\''[[:space:]]*,/ {
+		print "define( '\''SECURE_AUTH_SALT'\'', '\''" secure_auth_salt "'\'' );"
+		sas = 1; next
+	}
+	
+	# LOGGED_IN_SALT
+	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''LOGGED_IN_SALT'\''[[:space:]]*,/ {
+		print "define( '\''LOGGED_IN_SALT'\'', '\''" logged_in_salt "'\'' );"
+		ls = 1; next
+	}
+	
+	# NONCE_SALT
+	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''NONCE_SALT'\''[[:space:]]*,/ {
+		print "define( '\''NONCE_SALT'\'', '\''" nonce_salt "'\'' );"
+		ns = 1; next
+	}
+
+	{
+		print
+	}
+
+	END {
+		if (!(ak && sak && lk && nk && as && sas && ls && ns)) exit 1
+	}
+	' "$web_wp_config" > "$web_wp_config.tmp" && \
+	mv "$web_wp_config.tmp" "$web_wp_config" || {
+		echo "ERROR: $web_wp_config does not contain all WordPress salt definitions." >&2
+		rm -f "$web_wp_config.tmp"
+		exit 1
+	}
 }
