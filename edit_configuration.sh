@@ -4,7 +4,7 @@ edit_configuration() {
 	_edit_php_configuration
 	_edit_wp_configuration "$2"  # DB_NAME / USER / PASS
 	_generate_wp_salts
-	_edit_wp_salts "$2
+	_edit_wp_salts "$2"
 }
 
 _mariadb_initial() {
