@@ -146,12 +146,16 @@ _edit_wp_configuration() {
 	local web_dir="$1"  # such as "/var/www/www.example.com"
 	local web_wp_config="${web_dir}/wp-config.php"
 	cp "${web_dir}/wp-config-sample.php" "$web_wp_config"
+
+	RAND_SUFFIX=$(openssl rand -base64 24 | tr -dc 'a-z0-9' | head -c 12)
+	TABLE_PREFIX="${RAND_SUFFIX}_"
 	
 	awk -v db_name="$DB_NAME" \
 		-v db_user="$DB_USER" \
-		-v db_pass="$DB_PASS" '
+		-v db_pass="$DB_PASS" \
+		-v db_prefix="$TABLE_PREFIX" '
 	BEGIN {
-		n = u = p = h = c = l = 0
+		n = u = p = h = c = l = t = 0
 	}
 
 	# DB_NAME
@@ -196,12 +200,19 @@ _edit_wp_configuration() {
 		next
 	}
 
+	# TABLE_PREFIX
+	/^[[:space:]]*\$table_prefix[[:space:]]*=/ {
+		print "\$table_prefix = '\''" db_prefix "'\'';"
+		t = 1
+		next
+	}
+
 	{
 		print
 	}
 
 	END {
-		if (!(n && u && p && h && c && l)) exit 1
+		if (!(n && u && p && h && c && l && t)) exit 1
 	}
 	' "$web_wp_config" > "$web_wp_config.tmp" && \
 	mv "$web_wp_config.tmp" "$web_wp_config" || {
