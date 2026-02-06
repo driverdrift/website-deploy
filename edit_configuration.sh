@@ -248,49 +248,49 @@ _edit_wp_salts() {
 	
 	# AUTH_KEY
 	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''AUTH_KEY'\''[[:space:]]*,/ {
-		printf "define( '\''AUTH_KEY'\'', '\''" auth_key "'\'' );"
+		print "define( '\''AUTH_KEY'\'', '\''" auth_key "'\'' );"
 		ak = 1; next
 	}
 	
 	# SECURE_AUTH_KEY
 	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''SECURE_AUTH_KEY'\''[[:space:]]*,/ {
-		printf "define( '\''SECURE_AUTH_KEY'\'', '\''" secure_auth_key "'\'' );"
+		print "define( '\''SECURE_AUTH_KEY'\'', '\''" secure_auth_key "'\'' );"
 		sak = 1; next
 	}
 	
 	# LOGGED_IN_KEY
 	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''LOGGED_IN_KEY'\''[[:space:]]*,/ {
-		printf "define( '\''LOGGED_IN_KEY'\'', '\''" logged_in_key "'\'' );"
+		print "define( '\''LOGGED_IN_KEY'\'', '\''" logged_in_key "'\'' );"
 		lk = 1; next
 	}
 	
 	# NONCE_KEY
 	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''NONCE_KEY'\''[[:space:]]*,/ {
-		printf "define( '\''NONCE_KEY'\'', '\''" nonce_key "'\'' );"
+		print "define( '\''NONCE_KEY'\'', '\''" nonce_key "'\'' );"
 		nk = 1; next
 	}
 	
 	# AUTH_SALT
 	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''AUTH_SALT'\''[[:space:]]*,/ {
-		printf "define( '\''AUTH_SALT'\'', '\''" auth_salt "'\'' );"
+		print "define( '\''AUTH_SALT'\'', '\''" auth_salt "'\'' );"
 		as = 1; next
 	}
 	
 	# SECURE_AUTH_SALT
 	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''SECURE_AUTH_SALT'\''[[:space:]]*,/ {
-		printf "define( '\''SECURE_AUTH_SALT'\'', '\''" secure_auth_salt "'\'' );"
+		print "define( '\''SECURE_AUTH_SALT'\'', '\''" secure_auth_salt "'\'' );"
 		sas = 1; next
 	}
 	
 	# LOGGED_IN_SALT
 	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''LOGGED_IN_SALT'\''[[:space:]]*,/ {
-		printf "define( '\''LOGGED_IN_SALT'\'', '\''" logged_in_salt "'\'' );"
+		print "define( '\''LOGGED_IN_SALT'\'', '\''" logged_in_salt "'\'' );"
 		ls = 1; next
 	}
 	
 	# NONCE_SALT
 	/^[[:space:]]*define[[:space:]]*\([[:space:]]*'\''NONCE_SALT'\''[[:space:]]*,/ {
-		printf "define( '\''NONCE_SALT'\'', '\''" nonce_salt "'\'' );"
+		print "define( '\''NONCE_SALT'\'', '\''" nonce_salt "'\'' );"
 		ns = 1; next
 	}
 
@@ -301,7 +301,7 @@ _edit_wp_salts() {
 	END {
 		if (!(ak && sak && lk && nk && as && sas && ls && ns)) exit 1
 	}
-	' "$web_wp_config" > "$web_wp_config.tmp" && \
+	' "$web_wp_config" > "$web_wp_config.tmp" > &2 && \
 	mv "$web_wp_config.tmp" "$web_wp_config" || {
 		echo "ERROR: $web_wp_config does not contain all WordPress salt definitions." >&2
 		rm -f "$web_wp_config.tmp"
