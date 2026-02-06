@@ -299,9 +299,9 @@ _edit_wp_salts() {
 	}
 
 	END {
-		if (!(ak && sak && lk && nk && as && sas && ls && ns)) exit 1
+		if (!(ak && sak && lk && nk && as && sas && ls && ns)) return 1
 	}
-	' "$web_wp_config" > "$web_wp_config.tmp" >&2 && \
+	' "$web_wp_config" > "$web_wp_config.tmp" && \
 	mv "$web_wp_config.tmp" "$web_wp_config" || {
 		echo "ERROR: $web_wp_config does not contain all WordPress salt definitions." >&2
 		rm -f "$web_wp_config.tmp"
