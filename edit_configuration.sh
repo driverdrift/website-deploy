@@ -203,7 +203,7 @@ _edit_wp_configuration() {
 
 	# TABLE_PREFIX, no need \$ in print "" and in regex
 	/^[[:space:]]*\$table_prefix[[:space:]]*=/ {
-		print "$table_prefix = '\''" db_prefix "'\'';"
+		print "\$table_prefix = '\''" db_prefix "'\'';"
 		t = 1
 		next
 	}
