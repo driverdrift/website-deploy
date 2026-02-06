@@ -1,18 +1,3 @@
-
-cd /var/www/wordpress/
-sudo cp wp-config-sample.php wp-config.php
-sudo nano /var/www/wordpress/wp-config.php
-: <<'END'
-define( 'DB_NAME', 'wordpress' );
-define( 'DB_USER', 'wpuser' );
-define( 'DB_PASSWORD', 'wp-password' );
-define( 'DB_HOST', 'localhost' );
-define( 'DB_CHARSET', 'utf8mb4' );
-define( 'DB_COLLATE', 'utf8mb4_unicode_ci' );
-END
-
-
-
 sudo nano /etc/nginx/sites-available/example.com.conf  # Copy etc.nginx.sites-available.example.com.conf
 # This configuration file is for the domain-specific server block.
 # To enable this configuration, create a symbolic link in the sites-enabled directory using the following command:
@@ -24,10 +9,7 @@ sudo nano /etc/nginx/sites-available/example.com.conf  # Copy etc.nginx.sites-av
 #
 # After enabling or disabling, reload Nginx to apply changes:
 #   sudo nginx -t && sudo systemctl reload nginx
-##
 
-
-#
 
 
 
@@ -248,4 +230,5 @@ $schema = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https://' 
 $host = $_SERVER['HTTP_HOST'];
 define('WP_HOME', $schema . $host);
 define('WP_SITEURL', $schema . $host);
+
 
