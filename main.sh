@@ -13,5 +13,4 @@ install_packages "$DIR"
 source ./edit_configuration.sh
 edit_configuration "$DOMAIN" "$DIR"
 
-# 使用链接避免php升级 sudo ln -sf /run/php/php8.3-fpm.sock /run/php/php-fpm.sock
-# 默认站点目录 /var/www/wordpress 即可
+echo "Install website successfully."
