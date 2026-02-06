@@ -313,6 +313,6 @@ _edit_wp_salts() {
 	mv "$web_wp_config.tmp" "$web_wp_config" || {
 		echo "ERROR: $web_wp_config does not contain all WordPress salt definitions." >&2
 		rm -f "$web_wp_config.tmp"
-		# exit 1
+		exit 1
 	}
 }
