@@ -147,8 +147,9 @@ _edit_wp_configuration() {
 	local web_wp_config="${web_dir}/wp-config.php"
 	cp "${web_dir}/wp-config-sample.php" "$web_wp_config"
 
-	RAND_SUFFIX=$(openssl rand -base64 24 | tr -dc 'a-z0-9' | head -c 12)
-	TABLE_PREFIX="${RAND_SUFFIX}_"
+	local domain_trunc_12=${DOMAIN_DB:0:12}
+	local rand_suffix=$(openssl rand -base64 24 | tr -dc 'a-z0-9' | head -c 12)
+	TABLE_PREFIX="${domain_trunc_12}_${rand_suffix}_"
 	
 	awk -v db_name="$DB_NAME" \
 		-v db_user="$DB_USER" \
