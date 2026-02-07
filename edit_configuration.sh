@@ -124,8 +124,8 @@ _generate_custom_domain_cert() {
 	
 	[alt_names]
 	DNS.1 = localhost
-	DNS.2 = ${domain}.com
-	DNS.3 = *.${domain}.com
+	DNS.2 = ${domain}
+	DNS.3 = *.${domain}
 	IP.1 = 127.0.0.1
 	IP.2 = ::1
 	IP.3 = ${LOCAL_IP}
