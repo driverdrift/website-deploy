@@ -1,36 +1,6 @@
-sudo nano /etc/nginx/sites-available/example.com.conf  # Copy etc.nginx.sites-available.example.com.conf
-# This configuration file is for the domain-specific server block.
-# To enable this configuration, create a symbolic link in the sites-enabled directory using the following command:
-# sudo ln -s /etc/nginx/sites-available/example.com.conf /etc/nginx/sites-enabled/
-# To view the currently enabled symbolic links, run:
-#   ls -l /etc/nginx/sites-enabled/
-# To disable this configuration, remove the symbolic link with:
-#   sudo rm /etc/nginx/sites-enabled/example.com.conf
-#
-# After enabling or disabling, reload Nginx to apply changes:
-#   sudo nginx -t && sudo systemctl reload nginx
 
 
 
-
-
-# To enable this configuration, create a symbolic link in the sites-enabled
-# directory using the following command:
-#   sudo ln -s /etc/nginx/sites-available/default_server.conf \
-#   /etc/nginx/sites-enabled/
-#
-# To view the currently enabled symbolic links, run:
-#   ls -l /etc/nginx/sites-enabled/
-#
-# To disable this configuration, remove the symbolic link with:
-#   sudo rm /etc/nginx/sites-enabled/default_server.conf
-#
-# After enabling or disabling, reload Nginx to apply changes:
-#   sudo nginx -t && sudo systemctl reload nginx
-##
-
-# Default server block configuration
-#
 
 # Edit default Nginx config to block IP access on HTTP/HTTPS with SSL paths
 sudo nano /etc/nginx/sites-available/default_server.conf  # Copy etc.nginx.sites-available.default_server.conf
@@ -230,5 +200,6 @@ $schema = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https://' 
 $host = $_SERVER['HTTP_HOST'];
 define('WP_HOME', $schema . $host);
 define('WP_SITEURL', $schema . $host);
+
 
 
