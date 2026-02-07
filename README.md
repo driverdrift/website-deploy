@@ -1,7 +1,7 @@
 # ⚠️ Disclaimer
 
 This script is intended for fresh installations only.  
-It will REMOVE existing website files and databases on the system.  
+It will **REMOVE** existing website files and databases on the system.  
 DO NOT run this script unless you fully understand what it does.
 
 Before executing, make sure you have a complete backup of your website data.  
