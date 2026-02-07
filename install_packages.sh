@@ -23,7 +23,7 @@ install_packages() {
 
 _ensure_apache_absent() {
 	if  command -v apache2 &>/dev/null; then
-		apt purge -y apache2 
+		apt purge -y apache2 >/dev/null
 		# Using 'purge' instead of 'remove' ensures that configuration files and related data are deleted.
 		# Specifically, it performs the following actions:
 		# 1. Stops and disables the services:
@@ -44,11 +44,11 @@ _ensure_apache_absent() {
 		# This ensures Apache is fully uninstalled with no residual configuration, logs, or active service entries.
 		# then `systemctl list-unit-files | grep apache` will be empty.
 		
-		apt autoremove -y --purge 
+		apt autoremove -y --purge >/dev/null
 		# Automatically removes packages that were installed as dependencies but are no longer required.
 		# Specifically, this includes apache2-bin, apache2-data, apache2-utils, and any other automatically installed packages no longer needed.
 		# The '--purge' option ensures that any remaining configuration files for these packages are also deleted.
 		
-		systemctl daemon-reload  # refresh systemd to recognize changed/removed unit files such as /etc/systemd/system/multi-user.target.wants/apache*.service symlinks
+		systemctl daemon-reload >/dev/null # refresh systemd to recognize changed/removed unit files such as /etc/systemd/system/multi-user.target.wants/apache*.service symlinks
 	fi
 }
