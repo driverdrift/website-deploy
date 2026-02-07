@@ -96,7 +96,11 @@ _generate_exclude_domain_cert() {
 EOF
 	
 	# Generate a new 2048-bit RSA private key and CSR (Certificate Signing Request)
-	# subj options: Country, State, Location, Organization, Organizational Unit, Common Name(usually as domain but morden browser see dns and ip from http.ext more )
+	# subj options: Country, State, Location, Organization, Organizational Unit, Common Name(must be domain or ip though morden browser see dns and ip from http.ext )
+	# CN (Common Name) must be a valid domain name or IP address.
+	# Modern browsers primarily validate the SAN (Subject Alternative Name) extension,
+	# but CN is still required for compatibility. 
+	# If CN is not a valid domain/IP, the certificate will be considered untrusted.
 	openssl req -new -newkey rsa:2048 -sha256 -nodes \
 		-keyout /etc/ssl/private/exclude_domain.key \
 		-out /tmp/exclude_domain.csr \
