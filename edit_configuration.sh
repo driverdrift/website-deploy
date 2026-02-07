@@ -19,6 +19,9 @@ _edit_nginx_configuration() {
 		# use custom domain
 		local custom_config="/etc/nginx/sites-available/${domain}.conf"
 		cp ./nginx-config-sample/example.com.conf "$custom_config"
+		# Edit default Nginx config to block IP access on HTTP/HTTPS
+		# using SSL certificate paths without domain names to prevent attackers
+		# from scanning the IP and inferring the real server IP behind a CDN
 		cp ./nginx-config-sample/default_server.conf "/etc/nginx/sites-available/"
 
 		sed -i "s/example.com/${domain}/g" "$custom_config"
