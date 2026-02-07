@@ -12,4 +12,4 @@ When using a self-signed certificate, this video file can be downloaded only if 
 Directly downloading the video URL without first loading the webpage may result in a "Network Error" due to TLS trust and browser security checks.  
 This is expected behavior with self-signed certificates and not a server-side issue.
 
-For production environments, it is strongly recommended to replace this with a certificate issued by a trusted CA (e.g., Let's Encrypt).
+**For production environments, it is strongly recommended to replace this with a certificate issued by a trusted CA (e.g., Let's Encrypt).**
