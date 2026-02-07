@@ -4,7 +4,7 @@
 
 # filename shouldn't contain extension like .* as it will not run.
 IPV4_URL="https://www.cloudflare.com/ips-v4"
-IPV6_URL="https://www.cloudflare.com/ips-v76"
+IPV6_URL="https://www.cloudflare.com/ips-v6"
 OUTPUT_FILE="/etc/nginx/snippets/cloudflare_real_ip.conf"
 BACKUP_FILE="/etc/nginx/snippets/cloudflare_real_ip.conf.bak"
 TMP_FILE="/tmp/cloudflare_real_ip.conf.tmp"
