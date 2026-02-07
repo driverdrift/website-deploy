@@ -136,7 +136,7 @@ EOF
 	openssl req -new -newkey rsa:2048 -sha256 -nodes \
 		-keyout /etc/ssl/private/${domain}.key \
 		-out /tmp/${domain}.csr \
-		-subj "/C=XX/ST=Local/L=Local/O=Local/OU=IP-ACCESS/CN=${domain}"
+		-subj "/C=Self-Signed/ST=Self-Signed/L=Self-Signed/O=Self-Signed/OU=DOMAIN-ACCESS/CN=${domain}"
 	
 	openssl x509 -req -days 36500 \
 		-in /tmp/${domain}.csr \
