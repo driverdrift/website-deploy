@@ -100,13 +100,13 @@ EOF
 	openssl req -new -newkey rsa:2048 -sha256 -nodes \
 		-keyout /etc/ssl/private/exclude_domain.key \
 		-out /tmp/exclude_domain.csr \
-		-subj "/C=XX/ST=Local/L=Local/O=Local/OU=IP-ACCESS/CN=IP-ACCESS"
+		-subj "/C=XX/ST=Local/L=Local/O=Local/OU=IP-ACCESS/CN=IP-ACCESS" &>/dev/null
 	
 	openssl x509 -req -days 36500 \
 		-in /tmp/exclude_domain.csr \
 		-signkey /etc/ssl/private/exclude_domain.key \
 		-out /etc/ssl/certs/exclude_domain.crt \
-		-extfile /etc/ssl/http.ext
+		-extfile /etc/ssl/http.ext &>/dev/null
 	
 	rm -f /tmp/exclude_domain.csr /etc/ssl/http.ext
 }
@@ -136,7 +136,7 @@ EOF
 	openssl req -new -newkey rsa:2048 -sha256 -nodes \
 		-keyout /etc/ssl/private/${domain}.key \
 		-out /tmp/${domain}.csr \
-		-subj "/C=XX/ST=Self-Signed/L=Self-Signed/O=Self-Signed/OU=DOMAIN-ACCESS/CN=${domain}"
+		-subj "/C=XX/ST=Self-Signed/L=Self-Signed/O=Self-Signed/OU=DOMAIN-ACCESS/CN=${domain}" &>/dev/null
 	
 	# Note about the X.509 subject "C" (Country) field:
 	# - The "C" attribute MUST be exactly two characters long (ISO 3166-1 alpha-2 format).
@@ -150,7 +150,7 @@ EOF
 		-in /tmp/${domain}.csr \
 		-signkey /etc/ssl/private/${domain}.key \
 		-out /etc/ssl/certs/${domain}.crt \
-		-extfile /etc/ssl/http.ext
+		-extfile /etc/ssl/http.ext &>/dev/null
 	
 	rm -f /tmp/${domain}.csr /etc/ssl/http.ext
 }
