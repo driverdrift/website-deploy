@@ -1,4 +1,4 @@
-⚠️ Disclaimer
+# ⚠️ Disclaimer
 
 This script is intended for fresh installations only.  
 It will REMOVE existing website files and databases on the system.  
