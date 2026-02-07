@@ -1,14 +1,10 @@
-
-
-
-
-# Edit default Nginx config to block IP access on HTTP/HTTPS with SSL paths
-sudo nano /etc/nginx/sites-available/default_server.conf  # Copy etc.nginx.sites-available.default_server.conf
-sudo chmod +x /etc/cron.daily/update_cf_real_ip.sh
-
-run-parts --report /etc/cron.daily
-run-parts --test /etc/cron.daily
-# 如果你想 实际执行 这些脚本，可以使用
+# Make the script executable; without +x permission, run-parts cannot execute it
+chmod +x /etc/cron.daily/update_cf_real_ip
+# Test which scripts in /etc/cron.daily would be executed, without actually running them
+# run-parts --test /etc/cron.daily  # debug
+# Execute all scripts in /etc/cron.daily and print a report of each executed script
+# run-parts --report /etc/cron.daily  # debug
+# Actually execute all scripts in /etc/cron.daily (without test or report)
 run-parts /etc/cron.daily
 
 
@@ -200,6 +196,7 @@ $schema = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https://' 
 $host = $_SERVER['HTTP_HOST'];
 define('WP_HOME', $schema . $host);
 define('WP_SITEURL', $schema . $host);
+
 
 
 
