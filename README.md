@@ -19,11 +19,12 @@ bash <(wget -qO- https://raw.githubusercontent.com/driverdrift/website-deploy/ma
 # Note:
 When using a self-signed certificate, this video file can be downloaded only if the page embedding it has already been opened in the browser.  
 Directly downloading the video URL without first loading the webpage may result in a "Network Error" due to TLS trust and browser security checks.  
-This is expected behavior with self-signed certificates and not a server-side issue.
-
+This is expected behavior with self-signed certificates and not a server-side issue.  
 **For production environments, it is strongly recommended to replace this with a certificate issued by a trusted CA (e.g., Let's Encrypt).**
+
 # Import a Self-Signed Certificate When Download Fails
-1. Use sftp to download /etc/ssl/certs/your_custom_domain.crt.
+1. Use sftp to download `/etc/ssl/certs/your_custom_domain.crt` file directly from the server.
+   1. Or export it from the browser: Open the website in your browser. Click the padlock icon in the address bar. Go to Certificate → Details → Export. Choose Single Certificate and save it, manually adding the .crt file extension.
 1. Double-click the .crt file and choose to open it with `Crypto Shell Extensions` app.
 1. Select the `Install Certificate…` option.
 1. For Store Location, choose `Local Machine`.
