@@ -47,6 +47,8 @@ _edit_nginx_configuration() {
 			"$ip_config"
 		rm -f "/etc/nginx/sites-enabled/default_server.conf"
 		ln -s "$ip_config" "/etc/nginx/sites-enabled"
+
+		_generate_ip_access_cert "$domain"
 	fi
 
 	cp ./scripts/update_cf_real_ip /etc/cron.daily
@@ -145,6 +147,38 @@ EOF
 		-keyout /etc/ssl/private/${domain}.key \
 		-out /tmp/${domain}.csr \
 		-subj "/C=XX/ST=Self-Signed/L=Self-Signed/O=Self-Signed/OU=DOMAIN-ACCESS/CN=${domain}" &>/dev/null
+	
+	openssl x509 -req -days 36500 \
+		-in /tmp/${domain}.csr \
+		-signkey /etc/ssl/private/${domain}.key \
+		-out /etc/ssl/certs/${domain}.crt \
+		-extfile /etc/ssl/http.ext &>/dev/null
+	
+	rm -f /tmp/${domain}.csr /etc/ssl/http.ext
+}
+
+_generate_ip_access_cert() {
+	local domain="$1"
+	local LOCAL_IP=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{print $7}')
+	
+	cat > /etc/ssl/http.ext <<EOF
+	authorityKeyIdentifier=keyid,issuer
+	basicConstraints=CA:FALSE
+	keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+	extendedKeyUsage = serverAuth, clientAuth
+	subjectAltName = @alt_names
+	
+	[alt_names]
+	DNS.1 = localhost
+	IP.1 = 127.0.0.1
+	IP.2 = ::1
+	IP.3 = ${LOCAL_IP}
+EOF
+	# CN use LOCAL_IP rather than domain, as domain here is "default" which doesn't work.
+	openssl req -new -newkey rsa:2048 -sha256 -nodes \
+		-keyout /etc/ssl/private/${domain}.key \
+		-out /tmp/${domain}.csr \
+		-subj "/C=XX/ST=Self-Signed/L=Self-Signed/O=Self-Signed/OU=DOMAIN-ACCESS/CN=${LOCAL_IP}" &>/dev/null
 	
 	openssl x509 -req -days 36500 \
 		-in /tmp/${domain}.csr \
