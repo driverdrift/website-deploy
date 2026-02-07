@@ -30,4 +30,4 @@ This is expected behavior with self-signed certificates and not a server-side is
 1. Select `Place all certificates in the following store` and click `Browse…`.
 1. Choose `Trusted Root Certification Authorities`.
 1. Click `Finish` to complete the certificate import.
-> Note: You need to restart your browser for the certificate to take effect.
+> Note: You need to **restart your browser** for the certificate to take effect.
