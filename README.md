@@ -22,3 +22,12 @@ Directly downloading the video URL without first loading the webpage may result 
 This is expected behavior with self-signed certificates and not a server-side issue.
 
 **For production environments, it is strongly recommended to replace this with a certificate issued by a trusted CA (e.g., Let's Encrypt).**
+# Import a Self-Signed Certificate When Download Fails
+1. Use sftp to download /etc/ssl/certs/your_custom_domain.crt.
+1. Double-click the .crt file and choose to open it with `Crypto Shell Extensions` app.
+1. Select the `Install Certificate…` option.
+1. For Store Location, choose `Local Machine`.
+1. Select `Place all certificates in the following store` and click `Browse…`.
+1. Choose `Trusted Root Certification Authorities`.
+1. Click `Finish` to complete the certificate import.
+> Note: You need to restart your browser for the certificate to take effect.
