@@ -44,16 +44,16 @@ _detect_public_ip(){
 	
 	# Generate an available high-range port
 	while :; do
-		local tmp_port=$(shuf -i 32768-65535 -n 1)
+		TMP_PORT=$(shuf -i 32768-65535 -n 1)
 		
-		if ! ss -tulpn | awk '{print $5}' | grep -q ":${tmp_port}$"; then
+		if ! ss -tulpn | awk '{print $5}' | grep -q ":${TMP_PORT}$"; then
 			# echo $?  # check last command result
 			break
 		fi
 	done
 	
 	# Deploy Nginx test configuration by replacing the placeholder port
-	sed "s/99999/${tmp_port}/g" "./nginx-config-sample/test_ip.conf" > "/etc/nginx/conf.d/test_ip.conf"
+	sed "s/99999/${TMP_PORT}/g" "./nginx-config-sample/test_ip.conf" > "/etc/nginx/conf.d/test_ip.conf"
 	
 	# Create a random token file for verification
 	local token=$(openssl rand -hex 32)
@@ -63,7 +63,7 @@ _detect_public_ip(){
 	local ufw_rule_added=0
 	if command -v ufw &>/dev/null; then
 		if ufw status | grep -q "Status: active"; then
-			ufw allow "${tmp_port}/tcp" &>/dev/null
+			ufw allow "${TMP_PORT}/tcp" &>/dev/null
 			ufw reload &>/dev/null
 			ufw_rule_added=1
 		fi
@@ -78,7 +78,7 @@ _detect_public_ip(){
 		--connect-timeout 5 \
 		--max-time 7 \
 		-H "Host: onlyfortest.com" \
-		"http://${public_ip}:${tmp_port}/.${token}.txt" || true)
+		"http://${public_ip}:${TMP_PORT}/.${token}.txt" || true)
 	# timeout 5 curl -s -H "Host: onlyfortest.com" ...  # alternative timeout method
 	
 	# Determine the result based on token verification
