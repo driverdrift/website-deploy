@@ -241,6 +241,41 @@ _wp_init_protect() {
 	# This way, all sites are protected by default.
 	# Specific sites can be whitelisted, because auth_basic is inherited.
 }
+	##
+	# Alternative protection methods during WordPress initialization
+	##
+	# ==========================================================================
+	# Method 1: Restrict access using UFW (Firewall-level protection) which happens before Nginx
+	#
+	# UFW rules are matched in order from top to bottom.
+	# The first rule that matches a packet is applied, and no further rules are evaluated.
+	# You can view the exact rule order (and their numbers) using: `ufw status numbered` 
+	#
+	# Cons:
+	#   - Requires knowing your public IP
+	#   - Easy to lock yourself out if misconfigured
+	#
+	# Example (DO NOT RUN blindly):
+	#   ufw allow from YOUR.IP.ADDR to any port 80 proto tcp
+	#   ufw allow from YOUR.IP.ADDR to any port 443 proto tcp
+	#   ufw deny in to any port 80
+	#   ufw deny in to any port 443
+	#
+	# ==========================================================================
+	# ==========================================================================
+	# Method 2: Nginx allow/deny IP whitelist
+	# Nginx default behavior is "allow all". Therefore, `deny all;` must be explicitly set
+	# Scope (same as auth_basic):
+	#	- http {}      : affects all sites (global)
+	#	- server {}    : affects one virtual host
+	#	- location {}  : fine-grained control
+	#
+	# Example:
+	#	allow X.X.X.X;  # your single IP (can add multiple lines)
+	#	allow Y.Y.Y.Y/ZZ;  # your subnet (CIDR notation, can add multiple lines)
+	#	deny all;  # deny all other addresses
+	#
+	# ==========================================================================
 
 _mariadb_initial() {
 	# ================================================================
