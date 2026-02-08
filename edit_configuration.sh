@@ -23,6 +23,8 @@ edit_configuration() {
 	# 4. Once the command finishes, the variable "v" does not persist in the current Shell.
 
 _detect_public_ip(){
+	source ./ensure_bin.sh
+	ensure_bin curl
 	# Get the local outbound IP address
 	local test_ip=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{print $7}')
 	
