@@ -72,6 +72,33 @@ _detect_public_ip(){
 	# Reload Nginx with config validation
 	nginx -t &>/dev/null && systemctl reload nginx || { echo "nginx failed when getting real ip"; exit 1; }
 	# grep -r "auth_basic" /etc/nginx/  # debug in nginx config error when seeting conflict: define twice
+
+	# Wait until the new port is actually listening.
+	# NOTE:
+	#   systemctl reload nginx ≠ "the new port is ready".
+	#
+	#   reload only does the following:
+	#     1) Sends HUP to the nginx master process
+	#     2) Old workers start exiting
+	#     3) New workers are forked
+	#
+	#   The TCP port is bound during *worker initialization*, not at reload time.
+	#   This process is asynchronous.
+	#
+	#   systemctl reload nginx returns immediately after sending HUP,
+	#   which may happen *before* the new worker finishes binding the port.
+	#
+	#   On slower or busy machines, the script may continue execution
+	#   before the port is actually listening, causing curl to fail.
+	#
+	#   Therefore, we must explicitly wait until the port shows up
+	#   in the listening socket list before proceeding.
+	for i in {1..30}; do
+		if ss -ltn | awk '{print $4}' | grep -q ":${TMP_PORT}$"; then
+			break
+		fi
+		sleep 0.3
+	done
 	
 	# Validate by accessing via Public IP + Host Header
 	local remote_content=$(curl -s \
