@@ -1,4 +1,5 @@
 edit_configuration() {
+	real_ip=$(_detect_public_ip)
 	_edit_nginx_configuration "$1"
 	_wp_init_protect
 	_mariadb_initial
@@ -9,6 +10,71 @@ edit_configuration() {
 	_edit_wp_salts "$2"
 	_secure_wordpress_permissions "$2"
 	_check_web_services
+}
+
+_detect_public_ip(){
+	# Get the local outbound IP address
+	local test_ip=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{print $7}')
+	
+	# If the outbound IP is a public address, return it immediately
+	case "$test_ip" in
+		10.*|192.168.*|172.1[6-9].*|172.2[0-9].*|172.3[0-1].*)
+			;;
+		*)
+			echo "$test_ip"
+			return 0
+			;;
+	esac
+	
+	# Fetch the "assumed" public IP via external service
+	local public_ip=$(curl -s4 ifconfig.me || true)
+	[[ -z "$public_ip" ]] && echo "$test_ip" && return 0
+	
+	# Generate an available high-range port
+	while :; do
+		local tmp_port=$(shuf -i 32768-65535 -n 1)
+		
+		if ! ss -tulpn | awk '{print $5}' | grep -q ":${tmp_port}$"; then
+			# echo $?  # check last command result
+			break
+		fi
+	done
+	
+	# Deploy Nginx test configuration by replacing the placeholder port
+	sed "s/99999/${tmp_port}/g" "./nginx-config-sample/test_ip.conf" > "/etc/nginx/conf.d/test_ip.conf"
+	
+	# Create a random token file for verification
+	local token=$(openssl rand -hex 32)
+	echo "$token" > "/var/www/html/.${token}.txt"
+	
+	# Handle UFW firewall (if installed and active)
+	local ufw_rule_added=0
+	if command -v ufw &>/dev/null; then
+		if ufw status | grep -q "Status: active"; then
+			ufw allow "${tmp_port}/tcp" &>/dev/null
+			ufw reload &>/dev/null
+			ufw_rule_added=1
+		fi
+	fi
+	
+	# Reload Nginx with config validation
+	nginx -t &>/dev/null && systemctl reload nginx || { echo "nginx failed when getting real ip"; exit 1; }
+	# grep -r "auth_basic" /etc/nginx/  # debug in nginx config error when seeting conflict: define twice
+	
+	# Validate by accessing via Public IP + Host Header
+	local remote_content=$(curl -s \
+		--connect-timeout 5 \
+		--max-time 7 \
+		-H "Host: onlyfortest.com" \
+		"http://${public_ip}:${tmp_port}/.${token}.txt" || true)
+	# timeout 5 curl -s -H "Host: onlyfortest.com" ...  # alternative timeout method
+	
+	# Determine the result based on token verification
+	if [[ "$remote_content" == "$token" ]]; then
+		echo "$public_ip"
+	else
+		echo "$test_ip"
+	fi
 }
 
 _edit_nginx_configuration() {
@@ -77,7 +143,7 @@ _generate_exclude_domain_cert() {
 	# This does not generate any outbound traffic or leak privacy.
 	# It is a local Linux kernel route lookup used to determine
 	# the source IP that would be selected for outbound connections.
-	local LOCAL_IP=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{print $7}')
+	local LOCAL_IP="$real_ip"
 	
 	# This relies on an external third-party service and requires outbound access.
 	# Avoid using external APIs in scripts when privacy or auditability is a concern.
@@ -126,7 +192,7 @@ EOF
 
 _generate_custom_domain_cert() {
 	local domain="$1"
-	local LOCAL_IP=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{print $7}')
+	local LOCAL_IP="$real_ip"
 	
 	cat > /etc/ssl/http.ext <<EOF
 	authorityKeyIdentifier=keyid,issuer
@@ -160,7 +226,7 @@ EOF
 
 _generate_ip_access_cert() {
 	local domain="$1"
-	local LOCAL_IP=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{print $7}')
+	local LOCAL_IP="$real_ip"
 	
 	cat > /etc/ssl/http.ext <<EOF
 	authorityKeyIdentifier=keyid,issuer
