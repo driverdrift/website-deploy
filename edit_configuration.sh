@@ -203,7 +203,6 @@ _wp_init_protect() {
 	# When the user later sets a password, they will still need to clear the browser cache in some cases.
 	# By setting a random user, the `sign in to access this site` popup is guaranteed to always appear.
 	
-	
 	# optition -c means create new file; do not use -c when adding a new user
 	# htpasswd -c /etc/nginx/auth/wp_init.pass admin
 	# htpasswd /etc/nginx/auth/wp_init.pass user2  # add new user
