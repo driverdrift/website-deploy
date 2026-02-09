@@ -15,7 +15,6 @@ _remind_dns_resolution() {
 	# Output a PowerShell command to add DNS, so the user can copy it
 	cat <<EOF
 \$add_dns = '$real_ip $DOMAIN'
-
 Start-Process powershell -Verb RunAs -ArgumentList @(
 	"-NoProfile",
 	"-ExecutionPolicy Bypass",
