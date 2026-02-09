@@ -99,7 +99,8 @@ _detect_public_ip(){
 	fi
 	
 	# Reload Nginx with config validation
-	nginx -t &>/dev/null && systemctl reload nginx || { echo "nginx failed when getting real ip"; exit 1; }
+	# systemctl reload nginx only if make sure that nginx is active.
+	nginx -t &>/dev/null && systemctl restart nginx || { echo "nginx failed when getting real ip"; exit 1; }
 	# grep -r "auth_basic" /etc/nginx/  # debug in nginx config error when seeting conflict: define twice
 
 	# Wait until the new port is actually listening.
