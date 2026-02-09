@@ -211,7 +211,7 @@ cleanup() {
 	fi
 
 	nginx -t &>/dev/null && systemctl reload nginx &>/dev/null || true
-	echo "It's a test whether deleting the work directory causes the script to stop running the next code"
+	# echo "It's a test whether deleting the work directory causes the script to stop running the next code"  # debug
 	# If the content contains single quotes, either escape them or enclose the string in double quotes.
 }
 
