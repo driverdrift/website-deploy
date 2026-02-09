@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
-trap 'rm -rf /tmp/website-deploy' EXIT
+trap 'rm -rf /tmp/website-deploy; cleanup' EXIT
 trap 'echo "operation is interrupted"; exit 130' INT
 
 if [[ ! "${1-}" =~ ^([Yy][Ee][Ss]|[Yy])$ ]]; then
