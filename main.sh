@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
-trap 'rm -rf /tmp/website-deploy; declare -F cleanup &>/dev/null && cleanup' EXIT
+trap 'declare -F cleanup &>/dev/null && cleanup; rm -rf /tmp/website-deploy' EXIT
 # Ensures that if the script exits unexpectedly, the cleanup function is only called if it has been defined.
 # Checks functions only. Stable behavior with clear semantics.
 # Better suited for scripts.
