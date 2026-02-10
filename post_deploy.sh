@@ -100,6 +100,12 @@ nginx -t &>/dev/null && systemctl reload nginx &>/dev/null || systemctl restart 
 	# Logical evaluation:
 	# true && true && true || true  → true
 	# Therefore, [[ true && true && false || false ]] will almost always be true.
+	# see the link for the [[ ]] ussage: https://github.com/driverdrift/man-pages/blob/main/builtin/%5B%5B
+	# see the link for the ussage of `test' builtin: https://github.com/driverdrift/man-pages/blob/main/builtin/test
+	# As [[ ... ]]: [[ expression ]] Execute conditional command. Returns a status of 0 or 1 depending on the evaluation of the conditional
+	# expression EXPRESSION.  Expressions are composed of the same primaries used
+	# by the `test' builtin, and may be combined using the supported operators.
+	# So we need to see the links of both `[[ ]]' and `test'.
 	##
 	#
 	# echo -e "Error: Service failed to restart. The reason is: \n" $(nginx -t 2>&1)
