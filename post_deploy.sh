@@ -1,5 +1,16 @@
 post_deploy() {
+	:
 }
+
+# post_deploy() {
+#	:  # or use 'true'
+# }
+# If you don't put anything inside the function body, you may encounter an error in some cases, such as:
+# -bash: syntax error near unexpected token `}'
+# This can especially happen when executing a shell script.
+# To avoid this, you can create a placeholder function that doesn't perform any actual operations. You can use one of the following two methods to prevent errors:
+# `:' is an empty command in Bash that does nothing and always returns success (exit status 0). You can use it as a placeholder inside the function body.
+# Alternatively, `true' is another commonly used empty command that always returns success (exit status 0). You can also use it inside the function body.
 
 _remind_dns_resolution() {
 	real_ip="192.168.1.1"
