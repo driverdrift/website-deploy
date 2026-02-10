@@ -57,6 +57,10 @@ EOF
 	echo
 }
 
+# When copying the entire code of the function below,
+# some parts of the code may be lost when pasting into a Linux terminal or Notepad++.
+# This may be caused by data format issues, or by mouse malfunction during scrolling.
+# In any case, do not overly trust copy-and-paste.
 _remind_wp_init_protection() {
 	DOMAIN="www.example.com"
 	echo
