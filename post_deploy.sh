@@ -74,6 +74,34 @@ nginx -t &>/dev/null && systemctl reload nginx &>/dev/null || systemctl restart 
 [[ $? -eq 0 ]] && echo "Success: Your website is now visible." || echo -e "Error: Service failed to restart. The reason is: \n$(nginx -t 2>&1)"'
 	echo "$(printf '=%.0s' {1..80})"
 	echo
+	##
+	# [[ $? ]] && echo ok
+	# This command cannot be used to determine whether the previous command succeeded.
+	# The reason is that [[ $? ]] does NOT check “whether the previous command was successful”;
+	# it checks whether the string represented by $? is non-empty.
+	# In [[ STRING ]], the condition is true as long as STRING is non-empty.
+	# Exit code semantics:
+	#   false → $? = 1 or other number not zero
+	#   true  → $? = 0
+	# The string "0" is also non-empty, so it evaluates to true.
+	# Therefore, [[ $? ]] will almost always be true.
+	# The correct way is:
+	# [[ $? -eq 0 ]]
+	#
+	# [[ true && true && false || false ]] || echo ok
+	# Inside [[ ... ]]:
+	#	true / false are NOT commands
+	#	They are treated as ordinary strings
+	#   && / || are logical operators internal to [[ ]]
+	# This is equivalent to:
+	# [[ "true" && "true" && "false" || "false" ]]
+	# In [[ ]]:
+	# - A non-empty string evaluates to true
+	# Logical evaluation:
+	# true && true && true || true  → true
+	# Therefore, [[ true && true && false || false ]] will almost always be true.
+	##
+	#
 	# echo -e "Error: Service failed to restart. The reason is: \n" $(nginx -t 2>&1)
 	# nginx output goes to stderr; without `2>&1`, it will appear before the prompt text
 	# echo -e $(nginx -t 2>&1)
@@ -85,4 +113,5 @@ nginx -t &>/dev/null && systemctl reload nginx &>/dev/null || systemctl restart 
 	# it does not restore newlines that were removed by the shell.
 	# Therefore, the quoted form below is required.
 	# echo -e "$(nginx -t 2>&1)"
+	##
 }
