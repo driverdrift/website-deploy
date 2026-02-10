@@ -45,3 +45,44 @@ EOF
 	echo "$(printf '=%.0s' {1..80})"
 	echo
 }
+
+_remind_wp_init_protection() {
+	DOMAIN="www.example.com"
+	echo
+	echo "$(printf '%s' "$(printf -- '-%.0s' {1..80})")"
+
+	# Inform the user that deployment is complete and WordPress init page is locked
+	echo "1. Deployment complete! For security, the WordPress initialization page has been locked."
+	echo "   Please run the following command to set your admin username and password:"
+	echo
+	# Show the command for creating Nginx access credentials
+	echo 'read -p "Enter the Nginx access username you want to create: " u; htpasswd -c /etc/nginx/auth/wp_init.pass "$u"'
+	echo "$(printf '=%.0s' {1..80})"
+
+	# Instructions after setting credentials
+	echo "2. After setting up password, refresh the website page >>>>>> https://${DOMAIN} <<<<<< on a desktop web browser to continue WordPress installation."
+	echo "   Do not use a mobile browser, as it may fail to load the login page."
+	echo
+	echo "$(printf '%s' "$(printf -- '-%.0s' {1..80})")"
+	
+	# Instructions for restoring site visibility after initialization
+	echo "3. After wordpress initialization, you should run the following commands to restore site visibility by removing the protection files: "
+	echo
+	echo 'rm -rf "/etc/nginx/auth" && \
+rm -f "/etc/nginx/conf.d/should_delete_after_wordpress_initialization.conf" && \
+nginx -t &>/dev/null && systemctl reload nginx &>/dev/null || systemctl restart nginx &>/dev/null
+[[ $? -eq 0 ]] && echo "Success: Your website is now visible." || echo -e "Error: Service failed to restart. The reason is: \n$(nginx -t 2>&1)"'
+	echo "$(printf '=%.0s' {1..80})"
+	echo
+	# echo -e "Error: Service failed to restart. The reason is: \n" $(nginx -t 2>&1)
+	# nginx output goes to stderr; without `2>&1`, it will appear before the prompt text
+	# echo -e $(nginx -t 2>&1)
+	# Without quotes: the shell performs word splitting on the command substitution result.
+	# All whitespace characters (spaces, newlines, tabs) are treated as separators,
+	# so newlines are converted into spaces.
+	# As a result, everything is printed on a single line.
+	# The `-e` option only interprets literal escape sequences like `\n`;
+	# it does not restore newlines that were removed by the shell.
+	# Therefore, the quoted form below is required.
+	# echo -e "$(nginx -t 2>&1)"
+}
