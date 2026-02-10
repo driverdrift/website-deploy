@@ -1,4 +1,4 @@
-post_deploy(){
+post_deploy() {
 }
 
 _remind_dns_resolution() {
