@@ -74,7 +74,7 @@ nginx -t &>/dev/null && systemctl reload nginx &>/dev/null || systemctl restart 
 [[ $? -eq 0 ]] && echo "Success: Your website is now visible." || echo -e "Error: Service failed to restart. The reason is: \n$(nginx -t 2>&1)"'
 	echo "$(printf '=%.0s' {1..80})"
 	echo
-	##
+	################################################################################
 	# [[ $? ]] && echo ok
 	# This command cannot be used to determine whether the previous command succeeded.
 	# The reason is that [[ $? ]] does NOT check “whether the previous command was successful”;
@@ -106,7 +106,112 @@ nginx -t &>/dev/null && systemctl reload nginx &>/dev/null || systemctl restart 
 	# expression EXPRESSION.  Expressions are composed of the same primaries used
 	# by the `test' builtin, and may be combined using the supported operators.
 	# So we need to see the links of both `[[ ]]' and `test'.
-	##
+	################################################################################
+	#
+	# [ true && true && false || false ] || echo ok
+	#
+	# This command will produce an error:
+	# -bash: [: missing `]'
+	#
+	# Literal meaning: bash tried to execute the `[` command but could not find the required closing `]`.
+	#
+	# Key points about `[ ]`:
+	# - `[` is not a shell syntax structure; it is a command (an alternative form of the `test` builtin).
+	#   [ is either /usr/bin/[ or a bash built-in command.
+	# - Its strict rule: the last argument must be a literal `]`.
+	#   Usage example:
+	#     [: [ arg... ] Evaluate conditional expression.
+	#     This is a synonym for the "test" builtin, but the last argument must be a literal `]` to match the opening `[`.
+	#     see the link for the [ ] ussage: https://github.com/driverdrift/man-pages/blob/main/builtin/%5B
+	#     see the link for the ussage of `test' builtin: https://github.com/driverdrift/man-pages/blob/main/builtin/test
+	#     we need to see the links of both `[ ]' and `test' as  `[ ]' is a synonym for the "test" builtin.
+	#
+	# - `[ ]` does NOT support `&&` or `||` as internal logical operators.
+	#
+	# How the shell parses `[ true && true && false || false ]`:
+	# - It is equivalent to executing a command:
+	#       /usr/bin/[ true && true && false || false ]
+	#   (or the bash builtin `[`)
+	# - Here `[` is the command name, `]` is the required last argument, and everything in between
+	#   is treated as ordinary strings. `&&` and `||` are **not** interpreted as logical operators.
+	#
+	# - Only inside `[[ ... ]]` are `&&` and `||` recognized as logical operators.
+	#
+	# Shell parsing sequence:
+	# - Shell first splits the command into tokens, then executes.
+	#   This means the command effectively becomes:
+	#       [ true &&     true       &&        false        || false ]  || echo a
+	# - The first part `[ true` fails due to missing closing `]`, triggering:
+	#       -bash: [: missing `]`
+	# - Similar to `[[ ]]`, logical evaluation short-circuits:
+	#   But here `[ true` fails, so the remaining tokens are skipped, 
+	#   Then the execution jumps to `|| false ]' here. This command produces no output, 
+	#   but if you run echo $?, the return value is 1. 
+	#   Therefore, the subsequent echo a will be executed. and the exit status is 1,
+	#   causing the `|| echo a' part to execute.
+	#
+	# Comparison: `[[]]` vs `[]`
+	# - [[ true && false ]] → shell syntax, supports logical operators (though `false` inside is treated as non-empty string)
+	# - [ true && false ] → command `[ true` gets executed; syntax is invalid, triggers error.
+	#
+	# Correct usage of `[ ]` (builtin `test` syntax):
+	# - Exits with status 0 (true) or 1 (false) depending on the evaluation of EXPR.
+	# - Can be used alone with `&&` / `||` outside, or in `if` statements (with optional `!` for negation).
+	#
+	# Examples:
+	#   [ 1 -eq 0 ] || echo "not equal"
+	#   if ! [ 1 -eq 0 ]; then echo "not equal"; fi
+	#
+	# Incorrect example (missing closing `]`):
+	#   [ 1 -eq 1
+	#
+	# Historical note:
+	# - `[` / `test` comes from early Unix; error messages are minimal and sometimes misleading.
+	#
+	# Common correct usages of `[ ]`:
+	#
+	# 1. Check previous command exit status:
+	#   ls /tmp
+	#   if [ $? -eq 0 ]; then
+	#       echo ok
+	#   fi
+	#   - Only one test inside `[ ]`
+	#   - Use test operators: -eq / -ne / -gt / -lt / etc.
+	#   - Do not use `&&` or `||` inside `[ ]`; use `[[ ]]` for that.
+	#
+	# 2. Check if string is empty or non-empty:
+	#   name="abc"
+	#   [ -n "$name" ] && echo "not empty"
+	#   [ -z "$name" ] && echo "empty"
+	#
+	# 3. Compare strings:
+	#   a="foo"
+	#   b="bar"
+	#   [ "$a" = "$b" ] && echo same
+	#   [ "$a" != "$b" ] && echo different
+	#   - Must have spaces around `=` or `!=`.
+	#
+	# 4. Compare numbers:
+	#   x=10
+	#   [ "$x" -gt 5 ] && echo "x > 5"
+	#   [ "$x" -le 20 ] && echo "x <= 20"
+	#   - Valid operators: -eq -ne -gt -ge -lt -le
+	#
+	# 5. Check file existence:
+	#   file=/etc/passwd
+	#   [ -f "$file" ] && echo "regular file"
+	#   [ -e "$file" ] && echo "exists"
+	#   [ -d "$file" ] && echo "directory"
+	#
+	# 6. Multiple conditions (correct ways):
+	#   [ "$a" = "foo" ] && [ "$b" = "bar" ] && echo ok
+	#   # or (older style):
+	#   [ "$a" = "foo" -a "$b" = "bar" ] && echo ok
+	#
+	# 7. Behavior of `[ false ]`:
+	#   - Content is treated as a string → non-empty → exit status 0, echo $? will input 0.
+	#   - Only `[ ]` with empty content → exit status 1, echo $? will input 1.
+	################################################################################
 	#
 	# echo -e "Error: Service failed to restart. The reason is: \n" $(nginx -t 2>&1)
 	# nginx output goes to stderr; without `2>&1`, it will appear before the prompt text
@@ -119,5 +224,5 @@ nginx -t &>/dev/null && systemctl reload nginx &>/dev/null || systemctl restart 
 	# it does not restore newlines that were removed by the shell.
 	# Therefore, the quoted form below is required.
 	# echo -e "$(nginx -t 2>&1)"
-	##
+	################################################################################
 }
