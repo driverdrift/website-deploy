@@ -32,6 +32,7 @@ _detect_public_ip(){
 	ensure_bin curl
 	# Get the local outbound IP address
 	local test_ip=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{print $7}')
+	HAVE_PUBLIC_IP=false
 	
 	# If the outbound IP is a public address, return it immediately
 	case "$test_ip" in
@@ -40,6 +41,7 @@ _detect_public_ip(){
 		*)
 			# echo "$test_ip"
 			real_ip="$test_ip"
+			HAVE_PUBLIC_IP=true
 			return 0
 			;;
 	esac
@@ -150,9 +152,11 @@ _detect_public_ip(){
 	if [[ "$remote_content" == "$token" ]]; then
 		# echo "$public_ip"
 		real_ip="$public_ip"
+		HAVE_PUBLIC_IP=true
 	else
 		# echo "$test_ip"
 		real_ip="$test_ip"
+		HAVE_PUBLIC_IP=false
 	fi
 	
 	# Some cloud providers may assign you a public IP that is still in a private network range (e.g., AWS internal IP),
