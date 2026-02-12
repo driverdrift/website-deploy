@@ -33,6 +33,7 @@ _detect_public_ip(){
 	# Get the local outbound IP address
 	local test_ip=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{print $7}')
 	HAVE_PUBLIC_IP=false
+	HAVE_CONFIGURED_DNS=false
 	
 	# If the outbound IP is a public address, return it immediately
 	case "$test_ip" in
@@ -42,7 +43,6 @@ _detect_public_ip(){
 			# echo "$test_ip"
 			real_ip="$test_ip"
 			HAVE_PUBLIC_IP=true
-			return 0
 			;;
 	esac
 
@@ -81,14 +81,14 @@ _detect_public_ip(){
 	[[ -z "$public_ip" ]] && echo "$test_ip" && return 0
 	
 	# Generate an available high-range port
-	while :; do
-		TMP_PORT=$(shuf -i 32768-65535 -n 1)
+	# while :; do
+		# TMP_PORT=$(shuf -i 32768-65535 -n 1)
 		
-		if ! ss -tulpn | awk '{print $5}' | grep -q ":${TMP_PORT}$"; then
-			# echo $?  # check last command result
-			break
-		fi
-	done
+		# if ! ss -tulpn | awk '{print $5}' | grep -q ":${TMP_PORT}$"; then
+			# # echo $?  # check last command result
+			# break
+		# fi
+	# done
 	
 	# Deploy Nginx test configuration by replacing the placeholder port
 	sed "s/99999/${TMP_PORT}/g" "./nginx-config-sample/test_ip.conf" > "/etc/nginx/conf.d/test_ip.conf"
