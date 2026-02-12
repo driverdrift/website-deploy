@@ -91,7 +91,8 @@ _detect_public_ip(){
 	# done
 	
 	# Deploy Nginx test configuration by replacing the placeholder port
-	sed "s/99999/${TMP_PORT}/g" "./nginx-config-sample/test_ip.conf" > "/etc/nginx/conf.d/test_ip.conf"
+	sed -E "s/^[[:space:]]*server_name[[:space:]]+[^;]+[[:space:]]*;[[:space:]]*$/\tserver_name ${DOMAIN};/" \
+		"./nginx-config-sample/test_ip.conf" > "/etc/nginx/sites-available/${DOMAIN}.conf"
 	
 	# Create a random token file for verification
 	local token=$(openssl rand -hex 32)
@@ -99,12 +100,12 @@ _detect_public_ip(){
 	echo "$token" > "${TMP_FILE}"
 	
 	# Handle UFW firewall (if installed and active)
-	UFW_RULE_ADDED=0
+	# UFW_RULE_ADDED=0
 	if command -v ufw &>/dev/null; then
 		if ufw status | grep -q "Status: active"; then
-			ufw allow "${TMP_PORT}/tcp" &>/dev/null
+			ufw allow "80,443/tcp" &>/dev/null
 			ufw reload &>/dev/null
-			UFW_RULE_ADDED=1
+			# UFW_RULE_ADDED=1
 		fi
 	fi
 	
@@ -134,18 +135,24 @@ _detect_public_ip(){
 	#   Therefore, we must explicitly wait until the port shows up
 	#   in the listening socket list before proceeding.
 	for i in {1..30}; do
-		if ss -ltn | awk '{print $4}' | grep -q ":${TMP_PORT}$"; then
+		if ss -ltn | awk '{print $4}' | grep -q ":80$"; then
 			break
 		fi
 		sleep 0.3
 	done
 	
 	# Validate by accessing via Public IP + Host Header
-	local remote_content=$(curl -s \
+	local ip_remote_content=$(curl -s \
 		--connect-timeout 5 \
 		--max-time 7 \
-		-H "Host: onlyfortest.com" \
-		"http://${public_ip}:${TMP_PORT}/.${token}.txt" || true)
+		-H "Host: ${DOMAIN}" \
+		"http://${public_ip}:80/.${token}.txt" || true)
+
+	local domain_remote_content=$(curl -s \
+		--connect-timeout 5 \
+		--max-time 7 \
+		"http://${DOMAIN}:80/.${token}.txt" || true)
+	
 	# timeout 5 curl -s -H "Host: onlyfortest.com" ...  # alternative timeout method
 	
 	# Determine the result based on token verification
