@@ -77,8 +77,8 @@ _detect_public_ip(){
 	}
 	
 	# Fetch the "assumed" public IP via external service
-	local public_ip=$(_get_public_ip || true)
-	[[ -z "$public_ip" ]] && echo "$test_ip" && return 0
+	local vps_public_ip=$(_get_public_ip || true)
+	[[ -z "$vps_public_ip" ]] && echo "$test_ip" && return 0
 	
 	# Generate an available high-range port
 	# while :; do
@@ -140,13 +140,27 @@ _detect_public_ip(){
 		fi
 		sleep 0.3
 	done
+
+	# Using DNS over TLS (DoT) prevents local DNS hijacking. Without TLS, DNS queries are plaintext and can be intercepted, 
+	# leading to local DNS resolution results. DNS over TLS uses port 853 and encrypts the communication, making it harder for a 
+	# man-in-the-middle attack to alter the response.
+	# dig @2606:4700:4700::1111 www.example.com AAAA +tls -6 +short
+	local public_dns_answer_ip=$(dig @1.1.1.1 www.example.com A +tls -4 +short | head -n1)
+	
 	# curl: -s:silent; -H:header(when conflict with domain, first see header, then domain in address), -k: allow self-signed cert.
 	# Validate by accessing via Public IP + Host Header
-	local ip_remote_content=$(curl -s \
+	local public_ip_remote_content=$(curl -s \
 		--connect-timeout 5 \
 		--max-time 7 \
 		-H "Host: ${DOMAIN}" \
 		"http://${public_ip}:80/.${token}.txt" || true)
+
+	# Condisering cdn.
+	local public_ip_remote_content=$(curl -s \
+		--connect-timeout 5 \
+		--max-time 7 \
+		-H "Host: ${DOMAIN}" \
+		"http://${public_dns_answer_ip}:80/.${token}.txt?nocache=$(date +%s)" || true)
 
 	local domain_remote_content=$(curl -s \
 		--connect-timeout 5 \
