@@ -33,6 +33,7 @@ _detect_public_ip(){
 	# Get the local outbound IP address
 	local test_ip=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{print $7}')
 	HAVE_PUBLIC_IP=false
+	get_public_ip=true
 	HAVE_LOCAL_CONFIGURED_DNS=false
 	HAVE_PUBLIC_CONFIGURED_DNS=false
 	
@@ -79,7 +80,7 @@ _detect_public_ip(){
 	
 	# Fetch the "assumed" public IP via external service
 	$HAVE_PUBLIC_IP && local vps_public_ip="$test_ip" || local vps_public_ip=$(_get_public_ip || true)
-	[[ -z "$vps_public_ip" ]] && echo "$test_ip" && return 0
+	[[ -z "$vps_public_ip" ]] && { real_ip="$test_ip"; get_public_ip=false; }
 	
 	# Generate an available high-range port
 	# while :; do
