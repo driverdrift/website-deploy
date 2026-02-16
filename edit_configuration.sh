@@ -78,7 +78,7 @@ _detect_public_ip(){
 	}
 	
 	# Fetch the "assumed" public IP via external service
-	local vps_public_ip=$(_get_public_ip || true)
+	$HAVE_PUBLIC_IP && local vps_public_ip="$test_ip" || local vps_public_ip=$(_get_public_ip || true)
 	[[ -z "$vps_public_ip" ]] && echo "$test_ip" && return 0
 	
 	# Generate an available high-range port
