@@ -156,7 +156,7 @@ _detect_public_ip(){
 		"http://${public_ip}:80/.${token}.txt" || true)
 
 	# Condisering cdn.
-	local dns_resolved_ip_remote_content=$(curl -s \
+	[[ -z $public_dns_answer_ip ]] || local dns_resolved_ip_remote_content=$(curl -s \
 		--connect-timeout 5 \
 		--max-time 7 \
 		-H "Host: ${DOMAIN}" \
