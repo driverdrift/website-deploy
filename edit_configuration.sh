@@ -79,7 +79,7 @@ _detect_primary_ip(){
 	}
 	
 	# Fetch the "assumed" public IP via external service
-	$HAVE_PUBLIC_IP || local external_ip=$(_get_external_ip || true)
+	$HAVE_PUBLIC_IP && $get_external_ip || local external_ip=$(_get_external_ip || true)
 	[[ -z "$external_ip" ]] && { primary_ip="$source_ip"; get_external_ip=false; }
 	
 	# Generate an available high-range port
@@ -181,14 +181,16 @@ _detect_primary_ip(){
 	# timeout 5 curl -s -H "Host: onlyfortest.com" ...  # alternative timeout method
 	
 	# Determine the result based on token verification
-	if $HAVE_PUBLIC_IP || [[ "$public_ip_remote_content" == "$token" ]]; then
-		# echo "$public_ip"
-		primary_ip="$external_ip"
-		HAVE_PUBLIC_IP=true
-	else
-		# echo "$source_ip"
-		primary_ip="$source_ip"
-		# HAVE_PUBLIC_IP=false  # the default value has set before.
+	if ! $HAVE_PUBLIC_IP; then
+		if [[ "$public_ip_remote_content" == "$token" ]]; then
+			# echo "$public_ip"
+			primary_ip="$external_ip"
+			HAVE_PUBLIC_IP=true
+		else
+			# echo "$source_ip"
+			primary_ip="$source_ip"
+			# HAVE_PUBLIC_IP=false  # the default value has set before.
+		fi
 	fi
 
 	if $HAVE_PUBLIC_IP; then
