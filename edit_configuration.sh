@@ -31,19 +31,19 @@ _detect_public_ip(){
 	source ./ensure_bin.sh
 	ensure_bin curl
 	# Get the local outbound IP address
-	local test_ip=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{print $7}')
+	local source_ip=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{print $7}')
 	HAVE_PUBLIC_IP=false
 	get_public_ip=true
 	HAVE_LOCAL_CONFIGURED_DNS=false
 	HAVE_PUBLIC_CONFIGURED_DNS=false
 	
 	# If the outbound IP is a public address, return it immediately
-	case "$test_ip" in
+	case "$source_ip" in
 		10.*|192.168.*|172.1[6-9].*|172.2[0-9].*|172.3[0-1].*)
 			;;
 		*)
 			# echo "$test_ip"
-			real_ip="$test_ip"
+			primary_ip="$source_ip"
 			HAVE_PUBLIC_IP=true
 			;;
 	esac
@@ -79,7 +79,7 @@ _detect_public_ip(){
 	}
 	
 	# Fetch the "assumed" public IP via external service
-	$HAVE_PUBLIC_IP || local vps_public_ip=$(_get_public_ip || true)
+	$HAVE_PUBLIC_IP || local external_ip=$(_get_public_ip || true)
 	[[ -z "$vps_public_ip" ]] && { real_ip="$test_ip"; get_public_ip=false; }
 	
 	# Generate an available high-range port
@@ -151,11 +151,11 @@ _detect_public_ip(){
 	
 	# curl: -s:silent; -H:header(when conflict with domain, first see header, then domain in address), -k: allow self-signed cert.
 	# Validate by accessing via Public IP + Host Header
-	local public_ip_remote_content=$(curl -s \
+	$HAVE_PUBLIC_IP || local public_ip_remote_content=$(curl -s \
 		--connect-timeout 5 \
 		--max-time 7 \
 		-H "Host: ${DOMAIN}" \
-		"http://${public_ip}:80/.${token}.txt" || true)
+		"http://${external_ip}:80/.${token}.txt" || true)
 
 	# Condisering cdn.
 	[[ -z $public_dns_answer_ip ]] || local dns_resolved_ip_remote_content=$(curl -s \
@@ -172,7 +172,7 @@ _detect_public_ip(){
 	# timeout 5 curl -s -H "Host: onlyfortest.com" ...  # alternative timeout method
 	
 	# Determine the result based on token verification
-	if [[ "$remote_content" == "$token" ]]; then
+	if [[ "$public_ip_remote_content" == "$token" ]]; then
 		# echo "$public_ip"
 		real_ip="$public_ip"
 		HAVE_PUBLIC_IP=true
