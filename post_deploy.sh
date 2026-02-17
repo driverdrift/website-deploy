@@ -98,8 +98,6 @@ _remind_wp_init_protection() {
 	else
 		local domain=$DOMAIN
 	fi
-	echo
-	echo "$(printf '%s' "$(printf -- '-%.0s' {1..80})")"
 
 	# Inform the user that deployment is complete and WordPress init page is locked
 	echo "1. Deployment complete! For security, the WordPress initialization page has been locked."
