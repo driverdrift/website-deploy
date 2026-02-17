@@ -80,7 +80,7 @@ _detect_primary_ip(){
 	
 	# Fetch the "assumed" public IP via external service
 	$HAVE_PUBLIC_IP && $get_external_ip || local external_ip=$(_get_external_ip || true)
-	[[ -z "$external_ip" ]] && { primary_ip="$source_ip"; get_external_ip=false; }
+	$HAVE_PUBLIC_IP || [[ -z "$external_ip" ]] && { primary_ip="$source_ip"; get_external_ip=false; }
 	
 	# Generate an available high-range port
 	# while :; do
