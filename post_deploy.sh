@@ -20,8 +20,8 @@ post_deploy() {
 # Alternatively, `true' is another commonly used empty command that always returns success (exit status 0). You can also use it inside the function body.
 
 _remind_local_dns_resolution() {
-	primary_ip="192.168.1.1"
-	DOMAIN="www.example.com"
+	# primary_ip="192.168.1.1"
+	# DOMAIN="www.example.com"
 	
 	echo
 	echo "Reminder: To open PowerShell, press Win + X and select 'Terminal'. All commands mentioned below should be run in PowerShell."
