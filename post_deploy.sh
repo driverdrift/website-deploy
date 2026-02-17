@@ -1,5 +1,5 @@
 post_deploy() {
-	if [ "$domain" != "default" ]; then
+	if [ "$DOMAIN" != "default" ]; then
 		$HAVE_LOCAL_CONFIGURED_DNS || _remind_local_dns_resolution
 		$HAVE_PUBLIC_IP && ! $HAVE_PUBLIC_CONFIGURED_DNS && _remind_publick_dns_resolution
 	fi
