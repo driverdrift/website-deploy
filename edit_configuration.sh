@@ -208,7 +208,6 @@ _detect_primary_ip(){
 
 	if [[ "$domain_remote_content" == "$token" ]]; then
 		HAVE_LOCAL_CONFIGURED_DNS=true
-		HAVE_PUBLIC_IP=true
 	fi
 	
 	# Some cloud providers may assign you a public IP that is still in a private network range (e.g., AWS internal IP),
