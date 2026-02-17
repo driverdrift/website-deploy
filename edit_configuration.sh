@@ -93,6 +93,7 @@ _detect_primary_ip(){
 	# done
 	
 	# Deploy Nginx test configuration by replacing the placeholder port
+	rm -f /etc/nginx/sites-enabled/default
 	if [ "$DOMAIN" = "default" ]; then
 		cp "./nginx-config-sample/default_server_detect_primary_ip.conf" "/etc/nginx/sites-available/default_server.conf"
 		rm -f "/etc/nginx/sites-enabled/default_server.conf"
