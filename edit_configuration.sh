@@ -1,6 +1,6 @@
 edit_configuration() {
-	# real_ip=$(_detect_public_ip)
-	_detect_public_ip  # then get the global variable `real_ip`
+	# primary_ip=$(_detect_public_ip)
+	_detect_public_ip  # then get the global variable `primary_ip`
 	# The previous issue was that using `$()` would confine other variables
 	# like UFW_RULE_ADDED to a subshell, making them inaccessible to the
 	# cleanup function. Therefore, we call the function directly.
@@ -17,9 +17,9 @@ edit_configuration() {
 	_check_web_services
 }
 
-	# real_ip=$(_detect_public_ip)
+	# primary_ip=$(_detect_public_ip)
 	# Use $(...) for Command Substitution: Executes the function and assigns its output to the variable.
-	# If written as real_ip=_detect_public_ip, it is treated as a literal string assignment.
+	# If written as primary_ip=_detect_public_ip, it is treated as a literal string assignment.
 	# Other mistake example: demo(){ echo "$v"; }
 	# Running "v=1 demo" follows the logic of "Temporary Environment Variable":
 	# 1. Shell detects the "VAR=VALUE COMMAND" pattern at the start of the line.
@@ -80,7 +80,7 @@ _detect_public_ip(){
 	
 	# Fetch the "assumed" public IP via external service
 	$HAVE_PUBLIC_IP || local external_ip=$(_get_public_ip || true)
-	[[ -z "$vps_public_ip" ]] && { real_ip="$test_ip"; get_public_ip=false; }
+	[[ -z "$vps_public_ip" ]] && { primary_ip="$test_ip"; get_public_ip=false; }
 	
 	# Generate an available high-range port
 	# while :; do
@@ -183,11 +183,11 @@ _detect_public_ip(){
 	# Determine the result based on token verification
 	if [[ "$public_ip_remote_content" == "$token" ]]; then
 		# echo "$public_ip"
-		real_ip="$public_ip"
+		primary_ip="$public_ip"
 		HAVE_PUBLIC_IP=true
 	else
 		# echo "$test_ip"
-		real_ip="$test_ip"
+		primary_ip="$test_ip"
 		# HAVE_PUBLIC_IP=false  # the default value has set before.
 	fi
 
@@ -299,9 +299,9 @@ _edit_nginx_configuration() {
 		_generate_ip_access_cert "$domain"
 	fi
 
-	cp ./scripts/update_cf_real_ip /etc/cron.daily
+	cp ./scripts/update_cf_primary_ip /etc/cron.daily
 	# Make the script executable; without +x permission, run-parts cannot execute it
-	chmod +x /etc/cron.daily/update_cf_real_ip
+	chmod +x /etc/cron.daily/update_cf_primary_ip
 	# Test which scripts in /etc/cron.daily would be executed, without actually running them
 	# run-parts --test /etc/cron.daily  # debug
 	# Execute all scripts in /etc/cron.daily and print a report of each executed script
@@ -309,7 +309,7 @@ _edit_nginx_configuration() {
 	# Actually execute all scripts in /etc/cron.daily (without test or report)
 	# Run all scripts in /etc/cron.daily; if the script fails, fallback to using
 	# a pre-generated Cloudflare real IP Nginx snippet
-	run-parts /etc/cron.daily || cp ./nginx-config-sample/cloudflare_real_ip.conf /etc/nginx/snippets
+	run-parts /etc/cron.daily || cp ./nginx-config-sample/cloudflare_primary_ip.conf /etc/nginx/snippets
 
 	# Hide nginx version
 	# Use double quotes instead of single quotes; using single quotes with a backslash-newline
@@ -324,7 +324,7 @@ _generate_exclude_domain_cert() {
 	# This does not generate any outbound traffic or leak privacy.
 	# It is a local Linux kernel route lookup used to determine
 	# the source IP that would be selected for outbound connections.
-	local LOCAL_IP="$real_ip"
+	local LOCAL_IP="$primary_ip"
 	
 	# This relies on an external third-party service and requires outbound access.
 	# Avoid using external APIs in scripts when privacy or auditability is a concern.
@@ -373,7 +373,7 @@ EOF
 
 _generate_custom_domain_cert() {
 	local domain="$1"
-	local LOCAL_IP="$real_ip"
+	local LOCAL_IP="$primary_ip"
 	
 	cat > /etc/ssl/http.ext <<EOF
 	authorityKeyIdentifier=keyid,issuer
@@ -407,7 +407,7 @@ EOF
 
 _generate_ip_access_cert() {
 	local domain="$1"
-	local LOCAL_IP="$real_ip"
+	local LOCAL_IP="$primary_ip"
 	
 	cat > /etc/ssl/http.ext <<EOF
 	authorityKeyIdentifier=keyid,issuer
