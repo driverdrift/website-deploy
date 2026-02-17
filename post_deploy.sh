@@ -100,7 +100,7 @@ _remind_wp_init_protection() {
 	echo
 	# Show the command for creating Nginx access credentials
 	echo 'read -p "Enter the Nginx access username you want to create: " u; htpasswd -c /etc/nginx/auth/wp_init.pass "$u"'
-	echo "$(printf '=%.0s' {1..80})"
+	echo "$(printf '%s' "$(printf -- '-%.0s' {1..80})")"
 
 	# Instructions after setting credentials
 	echo "2. After setting up password, refresh the website page >>>>>> https://${domain} <<<<<< on a desktop web browser to continue WordPress installation."
