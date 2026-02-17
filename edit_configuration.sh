@@ -142,12 +142,6 @@ _detect_primary_ip(){
 		fi
 		sleep 0.3
 	done
-
-	# Using DNS over TLS (DoT) prevents local DNS hijacking. Without TLS, DNS queries are plaintext and can be intercepted, 
-	# leading to local DNS resolution results. DNS over TLS uses port 853 and encrypts the communication, making it harder for a 
-	# man-in-the-middle attack to alter the response.
-	# dig @2606:4700:4700::1111 www.example.com AAAA +tls -6 +short
-	local public_dns_answer_ip=$(dig @1.1.1.1 www.example.com A +tls -4 +short | head -n1 || true)
 	
 	# curl: -s:silent; -H:header(when conflict with domain, first see header, then domain in address), -k: allow self-signed cert.
 	# Validate by accessing via Public IP + Host Header
@@ -157,27 +151,6 @@ _detect_primary_ip(){
 		-H "Host: ${DOMAIN}" \
 		"http://${external_ip}:80/.${token}.txt" || true)
 
-	# Condisering cdn.
-	_get_dns_resolved_ip_remote_content() {
-		[[ -z $public_dns_answer_ip ]] || local dns_resolved_ip_remote_content=$(curl -s \
-			--connect-timeout 5 \
-			--max-time 7 \
-			-H "Host: ${DOMAIN}" \
-			"http://${public_dns_answer_ip}:80/.${token}.txt?nocache=$(date +%s)" || true)
-		
-		echo "${dns_resolved_ip_remote_content:-true}"
-	}
-
-	local domain_remote_content=$(curl -s \
-		--connect-timeout 5 \
-		--max-time 7 \
-		"http://${DOMAIN}:80/.${token}.txt" || true)
-
-	if [[ "$domain_remote_content" == "$token" ]]; then
-		HAVE_LOCAL_CONFIGURED_DNS=true
-		HAVE_PUBLIC_IP=true
-	fi
-	
 	# timeout 5 curl -s -H "Host: onlyfortest.com" ...  # alternative timeout method
 	
 	# Determine the result based on token verification
@@ -193,11 +166,38 @@ _detect_primary_ip(){
 		fi
 	fi
 
+	# Using DNS over TLS (DoT) prevents local DNS hijacking. Without TLS, DNS queries are plaintext and can be intercepted, 
+	# leading to local DNS resolution results. DNS over TLS uses port 853 and encrypts the communication, making it harder for a 
+	# man-in-the-middle attack to alter the response.
+	# dig @2606:4700:4700::1111 www.example.com AAAA +tls -6 +short
+	local public_dns_answer_ip=$(dig @1.1.1.1 www.example.com A +tls -4 +short | head -n1 || true)
+	
+	# Condisering cdn.
+	_get_dns_resolved_ip_remote_content() {
+		[[ -z $public_dns_answer_ip ]] || local dns_resolved_ip_remote_content=$(curl -s \
+			--connect-timeout 5 \
+			--max-time 7 \
+			-H "Host: ${DOMAIN}" \
+			"http://${public_dns_answer_ip}:80/.${token}.txt?nocache=$(date +%s)" || true)
+		
+		echo "${dns_resolved_ip_remote_content:-true}"
+	}
+
 	if $HAVE_PUBLIC_IP; then
 		dns_resolved_ip_remote_content=$(_get_dns_resolved_ip_remote_content)
 		if [[ "$dns_resolved_ip_remote_content" == "$token" ]]; then
 			HAVE_PUBLIC_CONFIGURED_DNS=true
 		fi
+	fi
+
+	local domain_remote_content=$(curl -s \
+		--connect-timeout 5 \
+		--max-time 7 \
+		"http://${DOMAIN}:80/.${token}.txt" || true)
+
+	if [[ "$domain_remote_content" == "$token" ]]; then
+		HAVE_LOCAL_CONFIGURED_DNS=true
+		HAVE_PUBLIC_IP=true
 	fi
 	
 	# Some cloud providers may assign you a public IP that is still in a private network range (e.g., AWS internal IP),
