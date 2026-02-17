@@ -1,5 +1,12 @@
 post_deploy() {
-	:
+	if [ "$domain" != "default" ]; then
+		$HAVE_LOCAL_CONFIGURED_DNS || _remind_local_dns_resolution
+		$HAVE_PUBLIC_IP && ! $HAVE_PUBLIC_CONFIGURED_DNS && _remind_publick_dns_resolution
+	fi
+	
+	_remind_wp_init_protection
+	_remind_import_self-signed_certificate
+	$HAVE_PUBLIC_IP && _remind_apply_public_certificate
 }
 
 # post_deploy() {
