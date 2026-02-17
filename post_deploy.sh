@@ -67,17 +67,22 @@ EOF
 _remind_publick_dns_resolution() {
 	echo "You can add a dns resolution record accessing https://dash.cloudflare.com/ "
 	echo "$DOMAIN → $primary_ip"
+	echo "$(printf '=%.0s' {1..80})"
 }
 
 _remind_import_self-signed_certificate() {
 	echo "accessing the link below to learn how to import a self-signed certificate when necessary: "
 	echo "https://github.com/driverdrift/website-deploy/blob/main/README.md#import-a-self-signed-certificate-when-download-fails"
+	echo "$(printf '=%.0s' {1..80})"
+	echo
 }
 
 _remind_apply_public_certificate() {
 	# considering certificate for ip or for domain.
 	echo "accessing the link below to learn how to apply a public certificate when in production environment: "
 	echo "https://github.com/driverdrift/website-deploy/"
+	echo "$(printf '=%.0s' {1..80})"
+	echo
 }
 
 # When copying the entire code of the function below,
