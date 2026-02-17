@@ -75,6 +75,7 @@ _remind_import_self-signed_certificate() {
 }
 
 _remind_apply_public_certificate() {
+	# considering certificate for ip or for domain.
 	echo "accessing the link below to learn how to apply a public certificate when in production environment: "
 	echo "https://github.com/driverdrift/website-deploy/"
 }
