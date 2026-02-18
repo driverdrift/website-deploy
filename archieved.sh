@@ -1,7 +1,3 @@
-# If the site fails to load initially, try the following based on the type of website:
-# For local websites, use a mobile hotspot with VPN turned off to check if the issue is related to your local network.
-# For public websites, try enabling VPN and switching to whitelist or global mode to bypass potential network restrictions.
-
 # Access WordPress at
 domain.com
 # Admin login URL by default
@@ -170,6 +166,7 @@ $schema = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https://' 
 $host = $_SERVER['HTTP_HOST'];
 define('WP_HOME', $schema . $host);
 define('WP_SITEURL', $schema . $host);
+
 
 
 
