@@ -126,7 +126,7 @@ _remind_wp_init_protection() {
 	echo "$(printf '%s' "$(printf -- '-%.0s' {1..80})")"
 
 	# Instructions after setting credentials
-	echo "2. After setting up password, refresh the website page >>>>>> https://${domain} <<<<<< on a desktop web browser to continue WordPress installation."
+	echo "2. After setting up password, access or refresh the website page >>>>>> https://${domain} <<<<<< on a desktop web browser to continue WordPress installation."
 	echo "   Do not use a mobile browser, as it may fail to load the login page."
 	echo "$(printf '%s' "$(printf -- '-%.0s' {1..80})")"
 	
