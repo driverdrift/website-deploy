@@ -15,6 +15,7 @@ edit_configuration() {
 	_edit_wp_salts "$2"
 	_secure_wordpress_permissions "$2"
 	_check_web_services
+	_update_hosts
 }
 
 	# primary_ip=$(_detect_public_ip)
@@ -907,3 +908,18 @@ _check_web_services() {
 		systemctl reload nginx || systemctl restart nginx || { echo "[FATAL] Failed to reload Nginx"; exit 1; }
 	fi
 }
+
+_update_hosts() {
+	sed -i -E "/[[:space:]]${domain}([[:space:]]|$)/d" /etc/hosts
+	echo -E "${primary_ip}\t${DOMAIN}" | tee -a /etc/hosts > /dev/null
+}
+# This function resolves the following three errors shown in WordPress Tools → Site Health:
+# Error: A scheduled event is late
+# Error: The REST API did not behave correctly
+# Error: Your site could not complete a loopback request
+#
+# Root cause: the domain does not have public DNS records configured and no local /etc/hosts entry was set.
+# As a result, when WordPress (running on the same VPS hosting the site) tries to access the domain,
+# it resolves to the public DNS instead of the local server.
+# The domain used during setup was a manually entered test domain without public DNS,
+# which leads to incorrect resolution and access failures.
