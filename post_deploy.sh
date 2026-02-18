@@ -5,6 +5,7 @@ post_deploy() {
 	fi
 	
 	_remind_wp_init_protection
+	_remind_enable_page_cache
 	_remind_import_self-signed_certificate
 	$HAVE_PUBLIC_IP && _remind_apply_public_certificate
 }
@@ -266,4 +267,12 @@ nginx -t &>/dev/null && systemctl reload nginx &>/dev/null || systemctl restart 
 	# Therefore, the quoted form below is required.
 	# echo -e "$(nginx -t 2>&1)"
 	################################################################################
+}
+
+_remind_enable_page_cache() {
+	echo "WordPress page caching is primarily implemented through caching plugins. Therefore, you need to change WordPress Permalinks from the default Plain format to any other pretty permalink structure."
+	echo "Next, install and activate a caching plugin such as WP Super Cache or W3 Total Cache."
+	echo "This will resolve the following error shown in WordPress Tools → Site Health and significantly improve your website’s loading speed: "
+	echo "Error: Page cache is not detected, but the server response time is OK."
+	echo "$(printf '=%.0s' {1..80})"
 }
