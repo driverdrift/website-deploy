@@ -34,3 +34,7 @@ This is expected behavior with self-signed certificates and not a server-side is
 1. Choose `Trusted Root Certification Authorities`.
 1. Click `Finish` to complete the certificate import.
 > Note: You need to **restart your browser** for the certificate to take effect.
+
+# Apply public certificate
+1. visit https://dash.cloudflare.com to apply for origin certificate.
+2. use Let's Encrypt for free TLS certificates.
