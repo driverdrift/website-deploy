@@ -55,17 +55,22 @@ EOF
 	echo "You can also run the following command to check which DNS the domain currently points to:"
 	echo
 	echo "ping $DOMAIN"
-	echo "$(printf '%s' "$(printf -- '-%.0s' {1..80})")"
-	
-	echo "Tip: If you added a DNS record in the Cloudflare dashboard, it may take some time to propagate. You can manually change your DNS to 1.1.1.1 or 8.8.8.8, then run the following command to refresh the DNS cache:"
-	echo
-	echo 'ipconfig /flushdns'
 	echo "$(printf '=%.0s' {1..80})"
 }
 
 _remind_publick_dns_resolution() {
 	echo "You can add a dns resolution record accessing https://dash.cloudflare.com/ "
 	echo "$DOMAIN → $primary_ip"
+	echo "$(printf '%s' "$(printf -- '-%.0s' {1..80})")"
+	
+	echo "Tip: If you added a DNS record in the Cloudflare dashboard, it may take some time to propagate. You can manually change your DNS to 1.1.1.1 or 8.8.8.8, then run the following command to refresh the DNS cache:"
+	echo
+	echo 'ipconfig /flushdns'
+	echo "$(printf '%s' "$(printf -- '-%.0s' {1..80})")"
+
+	echo "You can also run the following command to check which DNS the domain currently points to:"
+	echo
+	echo "ping $DOMAIN"
 	echo "$(printf '=%.0s' {1..80})"
 }
 
@@ -110,11 +115,14 @@ _remind_wp_init_protection() {
 	
 	# Instructions for restoring site visibility after initialization
 	echo "3. After wordpress initialization, you should run the following commands to restore site visibility by removing the protection files: "
+	echo "(Note: If you do not restore site visibility, WordPress may display the following warning in Tools → Site Health: "
+	echo "A scheduled event is late: The scheduled event, recovery_mode_clean_expired_keys, failed to run. Your site still works, but this may indicate that scheduling posts or automated updates may not work as intended."
+	echo "After restoring visibility, refresh the Site Health page a few times, or wait a short period, or visit the homepage or any post/page links. This will allow WordPress to re-run scheduled tasks and clear the warning.)"
 	echo
 	echo 'rm -rf "/etc/nginx/auth" && \
 rm -f "/etc/nginx/conf.d/should_delete_after_wordpress_initialization.conf" && \
 nginx -t &>/dev/null && systemctl reload nginx &>/dev/null || systemctl restart nginx &>/dev/null
-[[ $? -eq 0 ]] && echo "Success: Your website is now visible." || echo -e "Error: Service failed to restart. The reason is: \n$(nginx -t 2>&1)"'
+[[ $? -eq 0 ]] && echo -e "\nSuccess: Your website is now visible." || echo -e "\nError: Service failed to restart. The reason is: \n$(nginx -t 2>&1)"'
 	echo "$(printf '=%.0s' {1..80})"
 	################################################################################
 	# [[ $? ]] && echo ok
