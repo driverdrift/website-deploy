@@ -21,6 +21,10 @@ install_packages() {
 	echo "WordPress installed successfully in $1"
 }
 
+# uninstall nginx
+# apt purge nginx nginx-common nginx-core -y
+# rm -rf /etc/nginx
+
 _ensure_apache_absent() {
 	if  command -v apache2 &>/dev/null; then
 		apt-get purge -y apache2 >/dev/null
