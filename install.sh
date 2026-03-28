@@ -6,14 +6,14 @@ if [ "$EUID" -ne 0 ]; then
 	echo "Run with sudo or as root. You can run the code below instead..."
 	echo
   	if [[ "${1-}" =~ ^([Yy][Ee][Ss]|[Yy])$ ]]; then
-		echo 'sudo bash -c '\''bash <(wget -qO- https://raw.githubusercontent.com/driverdrift/website-deploy/main/install.sh) "$0"'\'' y'
+		echo 'sudo bash -c '\''bash <(wget -qO- https://raw.githubusercontent.com/botshell/website-deploy/main/install.sh) "$0"'\'' y'
 	else
-		echo 'sudo bash -c "$(wget -qO- https://raw.githubusercontent.com/driverdrift/website-deploy/main/install.sh)"'
+		echo 'sudo bash -c "$(wget -qO- https://raw.githubusercontent.com/botshell/website-deploy/main/install.sh)"'
 	fi
 	exit 1
 fi
 
-REPO_URL="https://github.com/driverdrift/website-deploy/archive/main.tar.gz"
+REPO_URL="https://github.com/botshell/website-deploy/archive/main.tar.gz"
 WORKDIR="/tmp/website-deploy"
 
 skip_confirm=${1:-false}
