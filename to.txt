@@ -9,3 +9,5 @@ nano /etc/nginx/nginx.conf
 
 Error: $table_prefix in wp-config.php can only contain numbers, letters, and underscores.
 代码里这部分也要修改一下，防止域名标签含有连字符
+
+申请的证书只是给1级申请的
